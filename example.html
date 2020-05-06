@@ -25,15 +25,18 @@
             'clientId': '678353975875-shl86pdiisrgg91dmck4pe4h1l8vdiul.apps.googleusercontent.com',
             'discoveryDocs': [discoveryUrl],
             'scope': SCOPE
-        }).then(function () {
+        }).then(thing());
+        function thing() {
+          
           GoogleAuth = gapi.auth2.getAuthInstance();
     
           // Listen for sign-in state changes.
           GoogleAuth.isSignedIn.listen(updateSigninStatus);
-    
+          
           // Handle initial sign-in state. (Determine if user is already signed in.)
           var user = GoogleAuth.currentUser.get();
           setSigninStatus();
+          console.log(user);
     
           // Call handleAuthClick function when user clicks on
           //      "Sign In/Authorize" button.
@@ -43,17 +46,17 @@
           $('#revoke-access-button').click(function() {
             revokeAccess();
           });
-        });
+        }
       }
     
       function handleAuthClick() {
         if (GoogleAuth.isSignedIn.get()) {
           // User is authorized and has clicked "Sign out" button.
-          console.log("so");
+          console.log("clicked so");
           GoogleAuth.signOut();
         } else {
           // User is not signed in. Start Google auth flow.
-          console.log("si");
+          console.log("clicked si");
           GoogleAuth.signIn();
         }
       }
@@ -65,6 +68,8 @@
       function setSigninStatus(isSignedIn) {
         var user = GoogleAuth.currentUser.get();
         var isAuthorized = user.hasGrantedScopes(SCOPE);
+        console.log(user);
+        console.log("Authorised: " + isAuthorized)
         if (isAuthorized) {
           $('#sign-in-or-out-button').html('Sign out');
           $('#revoke-access-button').css('display', 'inline-block');
@@ -98,33 +103,7 @@
     <script>
       
       vidArr = [];
-      // var GoogleAuth;
-      // function initClient() {
-      //     gapi.client.init({
-      //         'apiKey': 'AIzaSyDH3-W6b_8zwDbf9_gOgCoueqCG_fr1kFk',
-      //         'clientId': '678353975875-shl86pdiisrgg91dmck4pe4h1l8vdiul.apps.googleusercontent.com',
-      //         'scope': 'https://www.googleapis.com/auth/youtube.force-ssl',
-      //         'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest']
-      //     }).then(function () {
-      //         GoogleAuth = gapi.auth2.getAuthInstance();
 
-      //         // Listen for sign-in state changes.
-      //         GoogleAuth.isSignedIn.listen(updateSigninStatus);
-      //     });
-      //   }
-      // function authenticate() {
-      //   return gapi.auth2.getAuthInstance()
-      //       .signIn({scope: "https://www.googleapis.com/auth/youtube.force-ssl"})
-      //       .then(function() { console.log("Sign-in successful"); },
-      //             function(err) { console.error("Error signing in", err); });
-      // }
-      // function loadClient() {
-      //   gapi.client.setApiKey("AIzaSyDH3-W6b_8zwDbf9_gOgCoueqCG_fr1kFk");
-      //   return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
-      //       .then(function() { console.log("GAPI client loaded for API"); },
-      //             function(err) { console.error("Error loading GAPI client for API", err); });
-      // }
-      // Make sure the client is loaded and sign-in is complete before calling this method.
       function execute(vidId) {
         return gapi.client.youtube.videos.list({
           "part": "snippet,contentDetails,statistics",
@@ -137,9 +116,6 @@
                   },
                   function(err) { console.error("Execute error", err); });
       }
-      gapi.load("client:auth2", function() {
-        gapi.auth2.init({client_id: "678353975875-shl86pdiisrgg91dmck4pe4h1l8vdiul.apps.googleusercontent.com"});
-      });
 
       function showVid(vid) {
         let snip = vid["items"][0]["snippet"];
@@ -201,7 +177,7 @@
     <label for="vidID">Search: </label><input type="text" id="vidSearch">
     <button onclick="executeSearch(document.getElementById('vidSearch').value)">Search All</button><br>
     <label for="vidID">Video ID: </label><input type="text" id="vidID">
-    <button onclick="execute(document.getElementById('vidID').value)">Search by Vid ID</button><br>
+    <button onclick="execute(document.getElementById('vidID').value); console.log(vidArr)">Search by Vid ID</button><br>
     <button onclick="clearDiv()">Clear</button>
     <br>
     <div id="vidDisplay"></div>
