@@ -25,8 +25,7 @@
             'clientId': '678353975875-shl86pdiisrgg91dmck4pe4h1l8vdiul.apps.googleusercontent.com',
             'discoveryDocs': [discoveryUrl],
             'scope': SCOPE
-        }).then(thing());
-        function thing() {
+        }).then(function () {
           
           GoogleAuth = gapi.auth2.getAuthInstance();
     
@@ -36,7 +35,6 @@
           // Handle initial sign-in state. (Determine if user is already signed in.)
           var user = GoogleAuth.currentUser.get();
           setSigninStatus();
-          console.log(user);
     
           // Call handleAuthClick function when user clicks on
           //      "Sign In/Authorize" button.
@@ -46,17 +44,15 @@
           $('#revoke-access-button').click(function() {
             revokeAccess();
           });
-        }
+        });
       }
     
       function handleAuthClick() {
         if (GoogleAuth.isSignedIn.get()) {
           // User is authorized and has clicked "Sign out" button.
-          console.log("clicked so");
           GoogleAuth.signOut();
         } else {
           // User is not signed in. Start Google auth flow.
-          console.log("clicked si");
           GoogleAuth.signIn();
         }
       }
@@ -68,8 +64,6 @@
       function setSigninStatus(isSignedIn) {
         var user = GoogleAuth.currentUser.get();
         var isAuthorized = user.hasGrantedScopes(SCOPE);
-        console.log(user);
-        console.log("Authorised: " + isAuthorized)
         if (isAuthorized) {
           $('#sign-in-or-out-button').html('Sign out');
           $('#revoke-access-button').css('display', 'inline-block');
