@@ -100,7 +100,7 @@
 
       function execute(vidId) {
         return gapi.client.youtube.videos.list({
-          "part": "snippet,contentDetails,statistics",
+          "part": "snippet,statistics",
           "id": vidId
         })
             .then(function(response) {
@@ -153,7 +153,6 @@
           channelTitle: snip["channelTitle"],
           tags: snip["tags"],
           categoryId: snip["categoryId"],
-          licencedContent: vid["contentDetails"]["licensedContent"],
           viewCount: stats["viewCount"],
           likeCount: stats["likeCount"],
           dislikeCount: stats["dislikeCount"],
@@ -167,7 +166,6 @@
       }
 
     </script>
-    <!-- <button onclick="authenticate().then(loadClient)">Authorize</button><br> -->
     <label for="vidID">Search: </label><input type="text" id="vidSearch">
     <button onclick="executeSearch(document.getElementById('vidSearch').value)">Search All</button><br>
     <label for="vidID">Video ID: </label><input type="text" id="vidID">
