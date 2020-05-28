@@ -1,7 +1,9 @@
 {
-	"name" : "ValueTube",
-	"version" : "0.1",
-	"description" : "This is the ValueTube Extension",
+	"$schema" : "http://json-schema.org/draft-04/schema#",
+
+	"name": "Test Extension",
+	"version": "1",
+	"description": "This is the Test Extension",
 	"permissions": ["activeTab", "declarativeContent", "storage"],
 	"background" : {
 		"scripts" : ["background.js"],
