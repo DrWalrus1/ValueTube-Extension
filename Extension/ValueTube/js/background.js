@@ -12,7 +12,7 @@ chrome.runtime.onInstalled.addListener(function() {
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([{
       conditions: [new chrome.declarativeContent.PageStateMatcher({
-        pageUrl: {hostEquals: 'developer.chrome.com'}, //Extension on active on developer.chrome.com
+        pageUrl: {hostEquals: 'www.youtube.com'}, //Extension on active on YouTube only
       })
       ],
           actions: [new chrome.declarativeContent.ShowPageAction()]
