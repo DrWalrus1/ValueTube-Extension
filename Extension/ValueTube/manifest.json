@@ -1,5 +1,4 @@
 {
-	"$schema" :"http://json-schema.org/draft-04/schema",
 	"name" : "ValueTube",
 	"version" : "0.1",
 	"description" : "This is the ValueTube Extension",
