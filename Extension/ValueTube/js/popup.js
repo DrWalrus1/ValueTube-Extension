@@ -1,5 +1,4 @@
 let changeColor = document.getElementById('changeColor');
-let categoryArray = ["Alcohol", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Politics", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "Violence", "Weaponry", "News", "Music"];
 let videoID;
 
 //get videoID

@@ -1,19 +1,21 @@
 <!DOCTYPE html>
   <html>
     <head>
-      <style>
-        button {
-          height: 30px;
-          width: 30px;
-          outline: none;
-        }
-        body {
-          height: 400px;
-          width: 300px;
-        }
-      </style>
+      <link rel="stylesheet" href="../css/popup.css">
+      <link rel="stylesheet" href="../css/toggleswitch.css">
     </head>
     <body>
+      <div style="text-align: center;">
+        <h2>ValueTube</h2>
+      </div>
+      <div style="text-align: right; margin-right: 15px;">
+        <label for="curatorSwitch">Curator Mode </label>
+        <label id="curatorSwitch" class="switch">
+          <input type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      
       <button id="changeColor"></button>
       <script src="../js/popup.js"></script>
     </body>
