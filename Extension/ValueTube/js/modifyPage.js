@@ -1,6 +1,12 @@
 let categoryArray = ["Alcohol", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Politics", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "Violence", "Weaponry", "News", "Music"];
 let primaryInner = document.getElementById("primary-inner");
 
+chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
+    if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
+})
+
+// 
+
 function createCuratorDiv() {
     // TODO: Add check to see if curator element already exists 
     let primaryInner = document.getElementById("primary-inner");
@@ -65,7 +71,7 @@ function createCuratorDiv() {
     d.setAttribute('split-lines', '""');
     c.appendChild(d);
     // Iterate through category array and create checkboxes and append them to d
-    d.innerHTML = "<input type=\"checkbox\" id=\"Alcohol\" value=\"Alcohol\"><label for=\"Alcohol\">Alcohol</label><br>" +
+    d.innerHTML = "<div id=\"categories\" style=\"column-count:2;\"><input type=\"checkbox\" id=\"Alcohol\" value=\"Alcohol\"><label for=\"Alcohol\">Alcohol</label><br>" +
     "<input type=\"checkbox\" id=\"Comedy\" value=\"Comedy\"><label for=\"Comedy\">Comedy</label><br>" +
     "<input type=\"checkbox\" id=\"Conspiracy\" value=\"Conspiracy\"><label for=\"Conspiracy\">Conspiracy</label><br>" +
     "<input type=\"checkbox\" id=\"Drugs\" value=\"Drugs\"><label for=\"Drugs\">Drugs</label><br>" +
@@ -88,9 +94,8 @@ function createCuratorDiv() {
     "<input type=\"checkbox\" id=\"Thrill Seeking\" value=\"Thrill Seeking\"><label for=\"Thrill Seeking\">Thrill Seeking</label><br>" +
     "<input type=\"checkbox\" id=\"Violence\" value=\"Violence\"><label for=\"Violence\">Violence</label><br>" +
     "<input type=\"checkbox\" id=\"Vlog\" value=\"Vlog\"><label for=\"Vlog\">Vlog</label><br>" +
-    "<input type=\"checkbox\" id=\"Weaponry\" value=\"Weaponry\"><label for=\"Weaponry\">Weaponry</label><br>";
+    "<input type=\"checkbox\" id=\"Weaponry\" value=\"Weaponry\"><label for=\"Weaponry\">Weaponry</label><br></div>";
 }
-
 
 function removeCuratorDiv() {
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
