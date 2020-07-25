@@ -2,6 +2,7 @@ let categoryArray = ["Alcohol", "Conspiracy", "Drugs", "Educational", "Gambling"
 let primaryInner = document.getElementById("primary-inner");
 
 function createCuratorDiv() {
+    // TODO: Add check to see if curator element already exists 
     let primaryInner = document.getElementById("primary-inner");
     let curatorDiv = document.createElement("div");
     curatorDiv.setAttribute('id', 'VTCurator');
@@ -93,8 +94,9 @@ function createCuratorDiv() {
 
 function removeCuratorDiv() {
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
-        if (element.id ==="VTCurator") {
+        if (primaryInner.childNodes[index].id === "VTCurator") {
             primaryInner.removeChild(primaryInner.childNodes[index]);
+            break;
         }
     }
 }

@@ -11,3 +11,23 @@ chrome.tabs.query({active: true, currentWindow: true}, ([currentTab]) => {
 
 
 
+curatorInput.onclick = function(element) {
+    if (curatorInput.checked == true) {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.executeScript(
+                tabs[0].id,
+                {
+                    code: 'createCuratorDiv()'
+                })
+        });
+    } else {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.executeScript(
+                tabs[0].id,
+                {
+                    code: 'removeCuratorDiv();'
+                })
+        });
+        
+    }
+};
