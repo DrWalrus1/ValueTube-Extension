@@ -1,15 +1,39 @@
-let changeColor = document.getElementById('changeColor');
+let curatorInput = document.getElementById('curatorInput');
+let videoID;
 
-chrome.storage.sync.get('color', function(data) {
-    changeColor.style.backgroundColor = data.color;
-    changeColor.setAttribute('value', data.color);
-});
+if (localStorage.getItem("VTCuratorMode") == "true") {
+    document.getElementById("curatorInput").checked = true;
+}
 
-changeColor.onclick = function(element) {
-    let color = element.target.value;
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      chrome.tabs.executeScript(
-          tabs[0].id,
-          {code: 'document.body.style.backgroundColor = "' + color + '";'});
-    });
+//get videoID
+chrome.tabs.query({active: true, currentWindow: true}, ([currentTab]) => {
+    let url_string = currentTab.url;
+    let url = new URL(url_string);
+    videoID = url.searchParams.get("v");
+    //TODO: Add check to add ValueTube Section
+})
+
+
+
+curatorInput.onclick = function(element) {
+    if (curatorInput.checked == true) {
+        localStorage.setItem("VTCuratorMode", "true");
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.executeScript(
+                tabs[0].id,
+                {
+                    code: 'createCuratorDiv()'
+                })
+        });
+    } else {
+        localStorage.setItem("VTCuratorMode", "false");
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            chrome.tabs.executeScript(
+                tabs[0].id,
+                {
+                    code: 'removeCuratorDiv();'
+                })
+        });
+        
+    }
 };

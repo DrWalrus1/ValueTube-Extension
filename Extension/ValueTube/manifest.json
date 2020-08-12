@@ -1,12 +1,18 @@
 {
 	"name" : "ValueTube",
-	"version" : "0.1",
+	"version" : "0.3",
 	"description" : "This is the ValueTube Extension",
 	"permissions": ["activeTab", "declarativeContent", "storage"],
 	"background" : {
 		"scripts" : ["js/background.js"],
 		"persistent" : false
 	},
+	"content_scripts": [
+		{
+			"matches": ["*://www.youtube.com/watch*"],
+			"js": ["js/modifyPage.js"]
+		}
+	],
 	"page_action" : {
 		"default_popup" : "html/popup.html",
 		"default_icon" : {
