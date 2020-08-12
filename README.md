@@ -19,3 +19,15 @@ The _Extension_ folder contains the ValueTube Test Extension.
 
 Learn more about how it was done [here](https://developer.chrome.com/extensions/getstarted).
 
+## Server
+
+The _Server_ folder contains the ValueTube API Source Code.
+
+#### Requirements
+* NodeJS
+
+```
+npm install express
+npm install mongoose
+npm install body-parser (for Testing purposes)
+```
