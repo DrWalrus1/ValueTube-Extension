@@ -1,4 +1,4 @@
-const categoryArray = ["Alcohol", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Politics", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "Violence", "Weaponry", "News", "Music"];
+const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "TV Shows", "Violence", "Vlog", "Weaponry"];
 let primaryInner = document.getElementById("primary-inner");
 
 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
