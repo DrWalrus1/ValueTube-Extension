@@ -108,7 +108,7 @@ function createCuratorDiv() {
     paperButton.setAttribute("elevation", "0");
     paperButton.setAttribute("aria-disabled", "false");
     paperButton.setAttribute("style", "background-color: #00a6ff; display: inline-block; margin-right: 40px;");
-    paperButton.setAttribute("onclick", "console.log(document.getElementById('VTForm'))"); //TODO: Pass data to VT API
+    paperButton.setAttribute("onclick", "console.log(alert('Preferences Set.'))"); //TODO: Pass data to VT API
 
     buttonRenderer.appendChild(paperButton);
 
