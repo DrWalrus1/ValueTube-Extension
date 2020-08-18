@@ -9,6 +9,9 @@ chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
 
 function createCuratorDiv() {
     // TODO: Add check to see if curator element already exists 
+    if (document.getElementById("VTCurator")) {
+        return;
+    }
     let primaryInner = document.getElementById("primary-inner");
     let curatorDiv = document.createElement("div");
     curatorDiv.setAttribute('id', 'VTCurator');
@@ -132,6 +135,7 @@ function addCategories(categoryArray) {
 }
 
 function removeCuratorDiv() {
+    primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
         if (primaryInner.childNodes[index].id === "VTCurator") {
             primaryInner.removeChild(primaryInner.childNodes[index]);
