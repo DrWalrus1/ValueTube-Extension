@@ -14,7 +14,7 @@ chrome.tabs.query({active: true, currentWindow: true}, ([currentTab]) => {
 
 
 
-curatorInput.onclick = function(element) {
+curatorInput.onclick = function() {
     if (curatorInput.checked == true) {
         localStorage.setItem("VTCuratorMode", "true");
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -56,3 +56,14 @@ window.addEventListener('storage', function() {
         });
     }
 });
+
+let scrapeButton = document.getElementById("scrapeButton");
+scrapeButton.onclick = function() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        chrome.tabs.executeScript(
+            tabs[0].id,
+            {
+                code: 'scrapePage();'
+            })
+    });
+}

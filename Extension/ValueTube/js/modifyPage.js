@@ -1,6 +1,7 @@
 const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "TV Shows", "Violence", "Vlog", "Weaponry"];
 let primaryInner = document.getElementById("primary-inner");
 const url = new URLSearchParams(window.location.search);
+// FIXME: url doesnt refresh when a new video is loaded 
 const videoID = url.get('v');
 
 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
@@ -8,7 +9,6 @@ chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
 })
 
 function createCuratorDiv() {
-    // TODO: Add check to see if curator element already exists 
     if (document.getElementById("VTCurator")) {
         return;
     }
@@ -35,6 +35,8 @@ function createCuratorDiv() {
 
     let VTForm = document.createElement("form");
     VTForm.setAttribute("id", "VTForm");
+    VTForm.setAttribute("name", "VTForm");
+    VTForm.setAttribute("enctype", "multipart/form-data");
     VTForm.setAttribute("action", "https://valuetube.herokuapp.com/curator")
     VTForm.setAttribute("method", "post");
     VTForm.setAttribute("target", "_blank");
@@ -112,6 +114,7 @@ function createCuratorDiv() {
 
     let paperButton = document.createElement("paper-button");
     paperButton.setAttribute("noink", "");
+    paperButton.setAttribute("id", "VTSubmitButton");
     paperButton.setAttribute("class", "style-scope ytd-subscribe-button-renderer");
     paperButton.setAttribute("role", "button");
     paperButton.setAttribute("tabindex", "0");
@@ -119,7 +122,7 @@ function createCuratorDiv() {
     paperButton.setAttribute("elevation", "0");
     paperButton.setAttribute("aria-disabled", "false");
     paperButton.setAttribute("style", "background-color: #00a6ff; display: inline-block; margin-right: 40px;");
-    paperButton.setAttribute("onclick", "document.getElementById('VTForm').submit();");
+    paperButton.setAttribute("onclick", "window.postMessage('SubmitVT', '*')");
 
     buttonRenderer.appendChild(paperButton);
 
@@ -152,7 +155,80 @@ function removeCuratorDiv() {
     }
 }
 
+function scrapePage() {
+    let metaData = document.getElementsByTagName('meta');
+    let title = "";
+    let desc = "";
+    let imgURL = "";
+    let tags = [];
+    let channelID = "";
+    for (let i = 0; i < metaData.length; i++) {
+        if (metaData[i].hasAttribute('property')) {
+            switch (metaData[i].getAttribute('property')) {
+                case "og:title":
+                    title = metaData[i].getAttribute('content');
+                    break;
+                case "og:description":
+                    desc = metaData[i].getAttribute('content');
+                    break;
+                case "og:image":
+                    imgURL = metaData[i].getAttribute('content');
+                    break;
+                case "og:video:tag":
+                    tags.push(metaData[i].getAttribute('content'));
+                    break;
+            }
+        } else if (metaData[i].hasAttribute('itemprop') && metaData[i].getAttribute('itemprop') == "channelId") {
+            channelID = metaData[i].getAttribute('content');
+        }
+    }
 
+    return {"title" : title, "desc" : desc, "imgURL" : imgURL, "tags" : tags, "channelID" : channelID};
+    
+}
+
+function amendForm() {
+    let form = document.forms.namedItem("VTForm");
+    //console.log(form);
+    let formData = new FormData(form);
+    let fullMeta = scrapePage();
+    formData.append("title", fullMeta.title);
+    formData.append("description", fullMeta.desc);
+    formData.append("imgURL", fullMeta.imgURL);
+    for (let index = 0; index < fullMeta.tags.length; index++) {
+        formData.append("tags[]", fullMeta.tags[index]);
+    }
+    formData.append("channelID", fullMeta.channelID);
+    return formData;    
+}
+
+
+
+window.addEventListener("message", function(event) {
+    if (event.source != window)
+        return
+
+    if (event.data == "SubmitVT") {
+        let formData = amendForm();
+        var submit = new XMLHttpRequest();
+        let JForm = {};
+        
+        for (var pair of formData.entries()) {
+            if (pair[0].includes("[]")) {
+                if (pair[0] in JForm) {
+                    JForm[pair[0]].push(pair[1]);
+                } else {
+                    JForm[pair[0]] = [pair[1]];
+                }
+            } else {
+                JForm[pair[0]] = pair[1];
+            }
+        }
+        submit.open("POST", "https://valuetube.herokuapp.com/curator", true);
+        submit.setRequestHeader("Content-Type", "application/json")
+        submit.send(JSON.stringify(JForm));
+    }
+})
 /* HTML LAYOUT
 <div id="VTCurator" class="style-scope ytd-watch-flexy">
     <ytd-video-secondary-info-renderer class="style-scope ytd-watch-flexy">

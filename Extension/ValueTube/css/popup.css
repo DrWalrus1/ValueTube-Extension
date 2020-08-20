@@ -1,9 +1,3 @@
-button {
-    height: 30px;
-    width: 30px;
-    outline: none;
-}
-
 body {
     /* body border only for visualising body size*/
     border: 1px solid black;
