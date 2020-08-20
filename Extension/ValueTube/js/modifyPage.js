@@ -1,11 +1,11 @@
 const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "TV Shows", "Violence", "Vlog", "Weaponry"];
 let primaryInner = document.getElementById("primary-inner");
+const url = new URLSearchParams(window.location.search);
+const videoID = url.get('v');
 
 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
     if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
 })
-
-// 
 
 function createCuratorDiv() {
     // TODO: Add check to see if curator element already exists 
@@ -35,8 +35,16 @@ function createCuratorDiv() {
 
     let VTForm = document.createElement("form");
     VTForm.setAttribute("id", "VTForm");
-    // TODO: set attributes
+    VTForm.setAttribute("action", "https://valuetube.herokuapp.com/curator")
+    VTForm.setAttribute("method", "post");
+    VTForm.setAttribute("target", "_blank");
     a.appendChild(VTForm);
+
+    let IDInput = document.createElement("input");
+    IDInput.setAttribute("type", "hidden");
+    IDInput.setAttribute("name", "videoID");
+    IDInput.setAttribute("value", videoID);
+    VTForm.appendChild(IDInput);
 
     let heading = document.createElement("h2");
     heading.innerHTML = "ValueTube Curator";
@@ -111,7 +119,7 @@ function createCuratorDiv() {
     paperButton.setAttribute("elevation", "0");
     paperButton.setAttribute("aria-disabled", "false");
     paperButton.setAttribute("style", "background-color: #00a6ff; display: inline-block; margin-right: 40px;");
-    paperButton.setAttribute("onclick", "console.log(alert('Preferences Set.'))"); //TODO: Pass data to VT API
+    paperButton.setAttribute("onclick", "document.getElementById('VTForm').submit();");
 
     buttonRenderer.appendChild(paperButton);
 
@@ -127,7 +135,7 @@ function createCuratorDiv() {
 function addCategories(categoryArray) {
     let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
     categoryArray.forEach(element => {
-        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
+        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"filters[]\" value=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
     });
 
     innerHTML += "</div>";
@@ -144,12 +152,6 @@ function removeCuratorDiv() {
     }
 }
 
-function CollectFormData() {
-    const formData = new FormData(document.querySelector('form'));
-    for (var pair of formData.entries()) {
-    console.log(pair[0] + ': ' + pair[1]);
-    }
-}
 
 /* HTML LAYOUT
 <div id="VTCurator" class="style-scope ytd-watch-flexy">
