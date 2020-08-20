@@ -1,7 +1,10 @@
 body {
     /* body border only for visualising body size*/
     border: 1px solid black;
+    /*background-color: rgb(39, 39, 39); DARK THEME*/
+    background-color: whitesmoke;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: black;
     height: 400px;
     width: 300px;
 }

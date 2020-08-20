@@ -3,12 +3,18 @@
     <head>
       <link rel="stylesheet" href="../css/popup.css">
       <link rel="stylesheet" href="../css/toggleswitch.css">
+      <meta name="google-signin-scope" content="profile email">
+      <meta name="google-signin-client_id" content="678353975875-shl86pdiisrgg91dmck4pe4h1l8vdiul.apps.googleusercontent.com.apps.googleusercontent.com">
+      <script src="https://apis.google.com/js/platform.js" async defer></script>
     </head>
     <body>
-      <div style="text-align: center;">
-        <h2>ValueTube</h2>
+      <div style="text-align: center;" id="loginScreen">
+        <img src="../images/ValueTube Icon Full.png" width="40%" style="padding-top: 30px;">
+        <h1>ValueTube</h1>
+        <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+        <a href="#" id="signOut">Sign out</a>
       </div>
-      <div style="text-align: right; margin-right: 15px;">
+      <div style="text-align: right; margin-right: 15px; display: none" id="homeScreen">
         <label for="curatorSwitch">Curator Mode </label>
         <label id="curatorSwitch" class="switch">
           <input type="checkbox" id="curatorInput">
