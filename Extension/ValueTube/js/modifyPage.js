@@ -122,7 +122,8 @@ function createCuratorDiv() {
     paperButton.setAttribute("elevation", "0");
     paperButton.setAttribute("aria-disabled", "false");
     paperButton.setAttribute("style", "background-color: #00a6ff; display: inline-block; margin-right: 40px;");
-    paperButton.setAttribute("onclick", "window.postMessage('SubmitVT', '*')");
+
+    paperButton.setAttribute("onclick", "window.postMessage({type: 'SubmitVT', retData: JSON.parse(ytplayer.config['args']['player_response'])}, '*')");
 
     buttonRenderer.appendChild(paperButton);
 
@@ -155,11 +156,8 @@ function removeCuratorDiv() {
     }
 }
 
-function scrapePage(/* get the ytplayer.config["args"]["player_response"] */) {
-    let metaData = JSON.parse(ytplayer.config["args"]["player_response"]); //## ytplayer is the global var we need
-
-    // the rest of this should work fine once you get access to ytplayer
-    // i would avoid console.logging any high level of this object as i think it's almost a MB
+function scrapePage(retData) {
+    let metaData = retData;
 
     let videoDetails = metaData["videoDetails"];
     let microformat = metaData["microformat"]["playerMicroformatRenderer"];
@@ -175,11 +173,11 @@ function scrapePage(/* get the ytplayer.config["args"]["player_response"] */) {
     
 }
 
-function amendForm(/* parse the ytplayer.config["args"]["player_response"] or something */) {
+function amendForm(retData) {
     let form = document.forms.namedItem("VTForm");
 
     let formData = new FormData(form);
-    let fullMeta = scrapePage(/* parse the ytplayer.config["args"]["player_response"] or something */);
+    let fullMeta = scrapePage(retData);
     formData.append("title", fullMeta.title);
     formData.append("description", fullMeta.desc);
     formData.append("imgURL", fullMeta.imgURL);
@@ -197,8 +195,8 @@ window.addEventListener("message", function(event) {
     if (event.source != window)
         return
 
-    if (event.data == "SubmitVT") {
-        let formData = amendForm(/* parse the ytplayer.config["args"]["player_response"] or something */); 
+    if (event.data.type && (event.data.type == "SubmitVT")) {
+        let formData = amendForm(event.data.retData); 
         var submit = new XMLHttpRequest();
         let JForm = {};
         
