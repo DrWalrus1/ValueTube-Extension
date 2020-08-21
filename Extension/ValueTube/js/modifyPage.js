@@ -1,4 +1,4 @@
-const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "TV Shows", "Violence", "Vlog", "Weaponry"];
+const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "DIY", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "TV Shows", "Violence", "Vlog", "Weaponry"];
 let primaryInner = document.getElementById("primary-inner");
 const url = new URLSearchParams(window.location.search);
 // FIXME: url doesnt refresh when a new video is loaded 
@@ -155,50 +155,39 @@ function removeCuratorDiv() {
     }
 }
 
-function scrapePage() {
-    let metaData = document.getElementsByTagName('meta');
-    let title = "";
-    let desc = "";
-    let imgURL = "";
-    let tags = [];
-    let channelID = "";
-    for (let i = 0; i < metaData.length; i++) {
-        if (metaData[i].hasAttribute('property')) {
-            switch (metaData[i].getAttribute('property')) {
-                case "og:title":
-                    title = metaData[i].getAttribute('content');
-                    break;
-                case "og:description":
-                    desc = metaData[i].getAttribute('content');
-                    break;
-                case "og:image":
-                    imgURL = metaData[i].getAttribute('content');
-                    break;
-                case "og:video:tag":
-                    tags.push(metaData[i].getAttribute('content'));
-                    break;
-            }
-        } else if (metaData[i].hasAttribute('itemprop') && metaData[i].getAttribute('itemprop') == "channelId") {
-            channelID = metaData[i].getAttribute('content');
-        }
-    }
+function scrapePage(/* get the ytplayer.config["args"]["player_response"] */) {
+    let metaData = JSON.parse(ytplayer.config["args"]["player_response"]); //## ytplayer is the global var we need
 
-    return {"title" : title, "desc" : desc, "imgURL" : imgURL, "tags" : tags, "channelID" : channelID};
+    // the rest of this should work fine once you get access to ytplayer
+    // i would avoid console.logging any high level of this object as i think it's almost a MB
+
+    let videoDetails = metaData["videoDetails"];
+    let microformat = metaData["microformat"]["playerMicroformatRenderer"];
+
+    let title = videoDetails["title"];
+    let desc = microformat["description"]["simpleText"];
+    let imgURL = microformat["thumbnail"]["thumbnails"][0]["url"];
+    let tags = videoDetails["keywords"];
+    let channelName = videoDetails["author"];
+    let category = microformat["category"];
+
+    return {"title" : title, "desc" : desc, "imgURL" : imgURL, "tags" : tags, "channelName" : channelName, "category" : category};
     
 }
 
-function amendForm() {
+function amendForm(/* parse the ytplayer.config["args"]["player_response"] or something */) {
     let form = document.forms.namedItem("VTForm");
-    //console.log(form);
+
     let formData = new FormData(form);
-    let fullMeta = scrapePage();
+    let fullMeta = scrapePage(/* parse the ytplayer.config["args"]["player_response"] or something */);
     formData.append("title", fullMeta.title);
     formData.append("description", fullMeta.desc);
     formData.append("imgURL", fullMeta.imgURL);
     for (let index = 0; index < fullMeta.tags.length; index++) {
         formData.append("tags[]", fullMeta.tags[index]);
     }
-    formData.append("channelID", fullMeta.channelID);
+    formData.append("channelName", fullMeta.channelName);
+    formData.append("category", fullMeta.category);
     return formData;    
 }
 
@@ -209,7 +198,7 @@ window.addEventListener("message", function(event) {
         return
 
     if (event.data == "SubmitVT") {
-        let formData = amendForm();
+        let formData = amendForm(/* parse the ytplayer.config["args"]["player_response"] or something */); 
         var submit = new XMLHttpRequest();
         let JForm = {};
         
