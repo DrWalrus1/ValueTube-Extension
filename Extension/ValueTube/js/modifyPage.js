@@ -1,8 +1,5 @@
 const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "DIY", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "TV Shows", "Violence", "Vlog", "Weaponry"];
 let primaryInner = document.getElementById("primary-inner");
-const url = new URLSearchParams(window.location.search);
-// FIXME: url doesnt refresh when a new video is loaded 
-const videoID = url.get('v');
 
 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
     if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
@@ -41,12 +38,6 @@ function createCuratorDiv() {
     VTForm.setAttribute("method", "post");
     VTForm.setAttribute("target", "_blank");
     a.appendChild(VTForm);
-
-    let IDInput = document.createElement("input");
-    IDInput.setAttribute("type", "hidden");
-    IDInput.setAttribute("name", "videoID");
-    IDInput.setAttribute("value", videoID);
-    VTForm.appendChild(IDInput);
 
     let heading = document.createElement("h2");
     heading.innerHTML = "ValueTube Curator";
@@ -178,6 +169,7 @@ function amendForm(retData) {
 
     let formData = new FormData(form);
     let fullMeta = scrapePage(retData);
+    formData.append('videoID', getVideoID());
     formData.append("title", fullMeta.title);
     formData.append("description", fullMeta.desc);
     formData.append("imgURL", fullMeta.imgURL);
@@ -189,8 +181,13 @@ function amendForm(retData) {
     return formData;    
 }
 
+function getVideoID() {
+    let url = new URLSearchParams(window.location.search);
+    return url.get('v');
+}
 
 
+// TODO: Add user feedback to button
 window.addEventListener("message", function(event) {
     if (event.source != window)
         return
