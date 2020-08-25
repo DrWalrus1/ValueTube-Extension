@@ -34,7 +34,7 @@ function createCuratorDiv() {
     VTForm.setAttribute("id", "VTForm");
     VTForm.setAttribute("name", "VTForm");
     VTForm.setAttribute("enctype", "multipart/form-data");
-    VTForm.setAttribute("action", "https://lukelynch.io/curator")
+    VTForm.setAttribute("action", "https://api.valuetube.net/curator")
     VTForm.setAttribute("method", "post");
     VTForm.setAttribute("target", "_blank");
     a.appendChild(VTForm);
@@ -208,7 +208,7 @@ window.addEventListener("message", function(event) {
                 JForm[pair[0]] = pair[1];
             }
         }
-        submit.open("POST", "https://lukelynch.io/curator", true);
+        submit.open("POST", "https://api.valuetube.net/curator", true);
         submit.setRequestHeader("Content-Type", "application/json")
         submit.send(JSON.stringify(JForm));
     }
