@@ -127,6 +127,10 @@ function createCuratorDiv() {
     
 }
 
+function ModifyRecommendationFeed() {
+    
+}
+
 function addCategories(categoryArray) {
     let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
     categoryArray.forEach(element => {
