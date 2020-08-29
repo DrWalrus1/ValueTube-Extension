@@ -192,7 +192,7 @@ window.addEventListener("message", function(event) {
     if (event.source != window)
         return
 
-    if (event.data.type && (event.data.type == "SubmitVT")) {
+    if (event.data && (event.data == "SubmitVT")) {
         let formData = amendForm(); 
         var submit = new XMLHttpRequest();
         let JForm = {};
