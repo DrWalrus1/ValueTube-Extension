@@ -160,7 +160,6 @@ window.addEventListener("message", function(event) {
 
     if (event.data && (event.data == "SubmitVT")) {
         let formData = new FormData(document.forms.namedItem("VTForm")); 
-        var submit = new XMLHttpRequest();
         let JForm = {"vID" : getVideoID()};
         
         for (var pair of formData.entries()) {
@@ -173,9 +172,13 @@ window.addEventListener("message", function(event) {
             } else {
                 JForm[pair[0]] = pair[1];
             }
-        }
-        submit.open("POST", "https://api.valuetube.net/curator", true);
-        submit.setRequestHeader("Content-Type", "application/json")
-        submit.send(JSON.stringify(JForm));
+        }        
+        chrome.runtime.sendMessage({greeting : "SubmitVT", data : JForm}, function (response) {
+            if (response.farewell == true) {
+                console.error("An Error occured trying to add your curated filters.");
+            } else if (response.farewell == false) {
+                console.log("Success! Curated Filters added.");
+            }
+        });
     }
 })
