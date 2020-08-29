@@ -159,20 +159,8 @@ window.addEventListener("message", function(event) {
         return
 
     if (event.data && (event.data == "SubmitVT")) {
-        let formData = new FormData(document.forms.namedItem("VTForm")); 
-        let JForm = {"vID" : getVideoID()};
-        
-        for (var pair of formData.entries()) {
-            if (pair[0].includes("[]")) {
-                if (pair[0] in JForm) {
-                    JForm[pair[0]].push(pair[1]);
-                } else {
-                    JForm[pair[0]] = [pair[1]];
-                }
-            } else {
-                JForm[pair[0]] = pair[1];
-            }
-        }        
+        // TODO: Error Handling
+        let JForm = CreateJForm();
         chrome.runtime.sendMessage({greeting : "SubmitVT", data : JForm}, function (response) {
             if (response.farewell == true) {
                 console.error("An Error occured trying to add your curated filters.");
@@ -182,3 +170,21 @@ window.addEventListener("message", function(event) {
         });
     }
 })
+
+function CreateJForm() {
+    let formData = new FormData(document.forms.namedItem("VTForm")); 
+    let JForm = {"vID" : getVideoID()};
+        
+    for (var pair of formData.entries()) {
+        if (pair[0].includes("[]")) {
+            if (pair[0] in JForm) {
+                JForm[pair[0]].push(pair[1]);
+            } else {
+                JForm[pair[0]] = [pair[1]];
+            }
+        } else {
+            JForm[pair[0]] = pair[1];
+        }
+    }
+    return JForm;
+}

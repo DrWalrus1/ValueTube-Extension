@@ -35,7 +35,7 @@ function sendCuratorData(JForm) {
   //   if (submit.status != 200) { // analyze HTTP status of the response
   //     sendResponse({farewell : false}); // e.g. 404: Not Found
   //   } else { // show the result
-  //     // TODO: Add check for failed document creation
+  //     // TODO: Error Handling
   //     sendResponse({farewell : true}); // response is the server
   //   }
   // }
