@@ -1,4 +1,4 @@
-const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "DIY", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "TV Shows", "Violence", "Vlog", "Weaponry"];
+const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "Tutorial", "TV Shows", "Violence", "Vlog", "Weaponry"];
 let primaryInner = document.getElementById("primary-inner");
 
 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
@@ -114,7 +114,7 @@ function createCuratorDiv() {
     paperButton.setAttribute("aria-disabled", "false");
     paperButton.setAttribute("style", "background-color: #00a6ff; display: inline-block; margin-right: 40px;");
 
-    paperButton.setAttribute("onclick", "window.postMessage({type: 'SubmitVT', retData: JSON.parse(ytplayer.config['args']['player_response'])}, '*')");
+    paperButton.setAttribute("onclick", "window.postMessage('SubmitVT', '*')");
 
     buttonRenderer.appendChild(paperButton);
 
@@ -147,37 +147,37 @@ function removeCuratorDiv() {
     }
 }
 
-function scrapePage(retData) {
-    let metaData = retData;
+// function scrapePage(retData) {
+//     let metaData = retData;
 
-    let videoDetails = metaData["videoDetails"];
-    let microformat = metaData["microformat"]["playerMicroformatRenderer"];
+//     let videoDetails = metaData["videoDetails"];
+//     let microformat = metaData["microformat"]["playerMicroformatRenderer"];
 
-    let title = videoDetails["title"];
-    let desc = microformat["description"]["simpleText"];
-    let imgURL = microformat["thumbnail"]["thumbnails"][0]["url"];
-    let tags = videoDetails["keywords"];
-    let channelName = videoDetails["author"];
-    let category = microformat["category"];
+//     let title = videoDetails["title"];
+//     let desc = microformat["description"]["simpleText"];
+//     let imgURL = microformat["thumbnail"]["thumbnails"][0]["url"];
+//     let tags = videoDetails["keywords"];
+//     let channelName = videoDetails["author"];
+//     let category = microformat["category"];
 
-    return {"title" : title, "desc" : desc, "imgURL" : imgURL, "tags" : tags, "channelName" : channelName, "category" : category};
+//     return {"title" : title, "desc" : desc, "imgURL" : imgURL, "tags" : tags, "channelName" : channelName, "category" : category};
     
-}
+// }
 
-function amendForm(retData) {
+function amendForm() {
     let form = document.forms.namedItem("VTForm");
 
     let formData = new FormData(form);
-    let fullMeta = scrapePage(retData);
+    //let fullMeta = scrapePage(retData);
     formData.append('videoID', getVideoID());
-    formData.append("title", fullMeta.title);
-    formData.append("description", fullMeta.desc);
-    formData.append("imgURL", fullMeta.imgURL);
-    for (let index = 0; index < fullMeta.tags.length; index++) {
-        formData.append("tags[]", fullMeta.tags[index]);
-    }
-    formData.append("channelName", fullMeta.channelName);
-    formData.append("category", fullMeta.category);
+    // formData.append("title", fullMeta.title);
+    // formData.append("description", fullMeta.desc);
+    // formData.append("imgURL", fullMeta.imgURL);
+    // for (let index = 0; index < fullMeta.tags.length; index++) {
+    //     formData.append("tags[]", fullMeta.tags[index]);
+    // }
+    // formData.append("channelName", fullMeta.channelName);
+    // formData.append("category", fullMeta.category);
     return formData;    
 }
 
@@ -193,7 +193,7 @@ window.addEventListener("message", function(event) {
         return
 
     if (event.data.type && (event.data.type == "SubmitVT")) {
-        let formData = amendForm(event.data.retData); 
+        let formData = amendForm(); 
         var submit = new XMLHttpRequest();
         let JForm = {};
         
