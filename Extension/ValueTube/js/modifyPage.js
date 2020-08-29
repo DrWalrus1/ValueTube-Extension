@@ -147,40 +147,6 @@ function removeCuratorDiv() {
     }
 }
 
-// function scrapePage(retData) {
-//     let metaData = retData;
-
-//     let videoDetails = metaData["videoDetails"];
-//     let microformat = metaData["microformat"]["playerMicroformatRenderer"];
-
-//     let title = videoDetails["title"];
-//     let desc = microformat["description"]["simpleText"];
-//     let imgURL = microformat["thumbnail"]["thumbnails"][0]["url"];
-//     let tags = videoDetails["keywords"];
-//     let channelName = videoDetails["author"];
-//     let category = microformat["category"];
-
-//     return {"title" : title, "desc" : desc, "imgURL" : imgURL, "tags" : tags, "channelName" : channelName, "category" : category};
-    
-// }
-
-function amendForm() {
-    let form = document.forms.namedItem("VTForm");
-
-    let formData = new FormData(form);
-    //let fullMeta = scrapePage(retData);
-    formData.append('videoID', getVideoID());
-    // formData.append("title", fullMeta.title);
-    // formData.append("description", fullMeta.desc);
-    // formData.append("imgURL", fullMeta.imgURL);
-    // for (let index = 0; index < fullMeta.tags.length; index++) {
-    //     formData.append("tags[]", fullMeta.tags[index]);
-    // }
-    // formData.append("channelName", fullMeta.channelName);
-    // formData.append("category", fullMeta.category);
-    return formData;    
-}
-
 function getVideoID() {
     let url = new URLSearchParams(window.location.search);
     return url.get('v');
@@ -193,9 +159,9 @@ window.addEventListener("message", function(event) {
         return
 
     if (event.data && (event.data == "SubmitVT")) {
-        let formData = amendForm(); 
+        let formData = new FormData(document.forms.namedItem("VTForm")); 
         var submit = new XMLHttpRequest();
-        let JForm = {};
+        let JForm = {"vID" : getVideoID()};
         
         for (var pair of formData.entries()) {
             if (pair[0].includes("[]")) {
@@ -213,78 +179,3 @@ window.addEventListener("message", function(event) {
         submit.send(JSON.stringify(JForm));
     }
 })
-/* HTML LAYOUT
-<div id="VTCurator" class="style-scope ytd-watch-flexy">
-    <ytd-video-secondary-info-renderer class="style-scope ytd-watch-flexy">
-        <h2 class="title style-scope ytd-video-primary-info-renderer">ValueTube Curator</h2>
-        <ytd-expander class="style-scope ytd-video-secondary-info-renderer" style="--ytd-expander-collapsed-height:80px;" collapsed="">
-            <!--css-build:shady-->
-            <div id="content" class="style-scope ytd-expander">
-                <yt-formatted-string class="content style-scope ytd-video-secondary-info-renderer" force-default-style="" split-lines="">
-                    <span dir="auto" class="style-scope yt-formatted-string">If you want more MEME REVIEW click HERE: </span>
-                </yt-formatted-string>
-            </div>
-        
-            <paper-button id="less" aria-expanded="true" noink="" class="style-scope ytd-expander" hidden="" role="button" tabindex="0" animated="" elevation="0" aria-disabled="false">
-            <!--css-build:shady-->
-            </paper-button>
-            <paper-button id="more" aria-expanded="false" noink="" class="style-scope ytd-expander" role="button" tabindex="0" animated="" elevation="0" aria-disabled="false" hidden="">
-            <!--css-build:shady-->
-            </paper-button>
-        </ytd-expander>
-    </ytd-video-secondary-info-renderer>
-    <div id="top-row" class="style-scope ytd-video-secondary-info-renderer">
-        <ytd-video-owner-renderer class="style-scope ytd-video-secondary-info-renderer">
-            <!--css-build:shady-->
-            <a class="yt-simple-endpoint style-scope ytd-video-owner-renderer" tabindex="-1">
-                <yt-img-shadow id="avatar" width="48" class="style-scope ytd-video-owner-renderer no-transition">
-                    <!--css-build:shady-->
-                    <img id="img" class="style-scope yt-img-shadow" alt="" width="48">
-                </yt-img-shadow>
-            </a>
-            <div id="upload-info" class="style-scope ytd-video-owner-renderer">
-                <ytd-channel-name id="channel-name" wrap-text="" class="style-scope ytd-video-owner-renderer">
-                    <!--css-build:shady-->
-                    <div id="container" class="style-scope ytd-channel-name">
-                        <div id="text-container" class="style-scope ytd-channel-name">
-                            <yt-formatted-string id="text" title="" class="style-scope ytd-channel-name">
-                                <!--css-build:shady-->
-                            </yt-formatted-string>
-                        </div>
-                        <paper-tooltip fit-to-visible-bounds="" offset="10" class="style-scope ytd-channel-name" role="tooltip" tabindex="-1">
-                            <!--css-build:shady-->
-                            <div id="tooltip" class="hidden style-scope paper-tooltip">
-                            </div>
-                        </paper-tooltip>
-                    </div>
-                    <ytd-badge-supported-renderer class="style-scope ytd-channel-name" disable-upgrade="" hidden="">
-                    </ytd-badge-supported-renderer>
-                </ytd-channel-name>
-                <yt-formatted-string id="owner-sub-count" class="style-scope ytd-video-owner-renderer">
-                    <!--css-build:shady-->
-                </yt-formatted-string>
-            </div>
-            <div id="sponsor-button" class="style-scope ytd-video-owner-renderer">
-            </div>
-            <div id="analytics-button" class="style-scope ytd-video-owner-renderer">
-            </div>
-        </ytd-video-owner-renderer>
-        <div id="subscribe-button" class="style-scope ytd-video-secondary-info-renderer">
-            <ytd-subscribe-button-renderer class="style-scope ytd-video-secondary-info-renderer" use-keyboard-focused="">
-                <!--css-build:shady-->
-                <paper-button noink="" class="style-scope ytd-subscribe-button-renderer" role="button" tabindex="0" animated="" elevation="0" aria-disabled="false" style="background-color: #317ce6;">
-                    <!--css-build:shady-->
-                    <yt-formatted-string class="style-scope ytd-subscribe-button-renderer" style="">Submit<!--css-build:shady--></yt-formatted-string>
-                    <paper-ripple class="style-scope paper-button">
-                        <!--css-build:shady-->
-                        <div id="background" class="style-scope paper-ripple"></div>
-                        <div id="waves" class="style-scope paper-ripple"></div>
-                    </paper-ripple>
-                </paper-button>
-                <div id="notification-preference-toggle-button" class="style-scope ytd-subscribe-button-renderer" hidden=""></div>
-                <div id="notification-preference-button" class="style-scope ytd-subscribe-button-renderer" hidden=""></div>
-            </ytd-subscribe-button-renderer>
-        </div>
-    </div>
-</div>
-*/
