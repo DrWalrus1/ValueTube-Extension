@@ -1,10 +1,11 @@
 const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "Tutorial", "TV Shows", "Violence", "Vlog", "Weaponry"];
 let primaryInner = document.getElementById("primary-inner");
 
-chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
-    if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
-})
-
+window.onload = function() {
+    chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
+        if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
+    })
+};
 function createCuratorDiv() {
     if (document.getElementById("VTCurator")) {
         return;

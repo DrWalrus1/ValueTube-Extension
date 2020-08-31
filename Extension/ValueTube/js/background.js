@@ -9,13 +9,17 @@ chrome.runtime.onInstalled.addListener(function() {
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([{
       conditions: [new chrome.declarativeContent.PageStateMatcher({
-        pageUrl: {hostEquals: 'www.youtube.com'}, //Extension on active on YouTube only
       })
       ],
           actions: [new chrome.declarativeContent.ShowPageAction()]
     }]);
   });
 });
+
+// TODO: On startup look for update on chrome extension store
+// chrome.runtime.onStartup.addListener(function() {
+
+// });
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
