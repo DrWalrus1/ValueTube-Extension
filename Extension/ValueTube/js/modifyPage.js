@@ -1,4 +1,4 @@
-const categoryArray = ["Alcohol", "Comedy", "Conspiracy", "Drugs", "Educational", "Gambling", "Gaming", "Horror", "LGBT", "Memes", "Movies", "Music", "News", "Politics", "Promotional", "Relationships", "Religion", "Self-harm", "Sports", "Suggestive content", "Thrill Seeking", "Tutorial", "TV Shows", "Violence", "Vlog", "Weaponry"];
+const categoryArray = ["Adult Content", "Alcohol/Drugs", "Comedy", "Conspiracy", "Education", "Gambling", "Gaming", "Horror", "LGBT", "Movies/TV", "Music", "News/Politics", "Promotional", "Religion", "Romance", "Sports", "Violence", "Vlog"];
 let primaryInner = document.getElementById("primary-inner");
 
 window.onload = function() {
