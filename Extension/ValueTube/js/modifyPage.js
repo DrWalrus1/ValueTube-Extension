@@ -1,4 +1,15 @@
 const categoryArray = ["Adult Content", "Alcohol/Drugs", "Comedy", "Conspiracy", "Education", "Gambling", "Gaming", "Horror", "LGBT", "Movies/TV", "Music", "News/Politics", "Promotional", "Religion", "Romance", "Sports", "Violence", "Vlog"];
+//TODO: change enum values to corresponding urls
+const page = {
+    HOME : "Homepage", // "/"
+    TRENDING : "Trending page", // "/feed/trending"
+    SUBSCRIPTIONS : "Subscriptions page", // "/feed/subscriptions"
+    SEARCH : "Search results page",
+    VIDEO : "Video player page",
+    CHANNEL : "YouTuber channel page",
+    PLAYLIST : "Video playlist page",
+    MIX : "Video mix page"
+};
 let primaryInner = document.getElementById("primary-inner");
 
 window.onload = function() {
@@ -6,6 +17,26 @@ window.onload = function() {
         if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
     })
 };
+
+function getVideoID() {
+    let url = new URLSearchParams(window.location.search);
+    return url.get('v');
+}
+
+// TODO: add functionality that checks current page url with matching enum url
+function CheckPage(desiredPage) {
+    return true;
+}
+
+function addCategories(categoryArray) {
+    let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
+    categoryArray.forEach(element => {
+        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"filters[]\" value=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
+    });
+
+    innerHTML += "</div>";
+    return innerHTML;
+}
 
 function createCuratorDiv() {
     if (document.getElementById("VTCurator")) {
@@ -129,16 +160,6 @@ function createCuratorDiv() {
     
 }
 
-function addCategories(categoryArray) {
-    let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
-    categoryArray.forEach(element => {
-        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"filters[]\" value=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
-    });
-
-    innerHTML += "</div>";
-    return innerHTML;
-}
-
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
@@ -149,29 +170,58 @@ function removeCuratorDiv() {
     }
 }
 
-function getVideoID() {
-    let url = new URLSearchParams(window.location.search);
-    return url.get('v');
+/*
+TODO:
+DONE - CheckPage() - Check which page the user is currently on (should use enums(HOME, TRENDING, SEARCH, VIDEO, CHANNEL, PLAYLIST, MIX))
+GetSections() - Get array of sections
+GetVideoIDFromElement(HTML Element) - returns videoID of HTML element passed
+GetVideoElement(int) - return DOM element matching id passed
+RemoveVideoElement(HTML Element) - removes selected html element from home page
+FilterHomePage()
+
+Listener for when continuous renderer is executed.
+*/
+
+function GetSection() {
+    /* TODO:
+        1. Figure out a way of ensuring checking of not only any elements with tag "ytd-rich-item-renderer" and "ytd-rich-section-renderer"
+    */
+    return document.getElementById("contents");
 }
 
+function GetVideoIDFromElement(element) {
+    
+}
 
-// TODO: Add user feedback to button
-window.addEventListener("message", function(event) {
-    if (event.source != window)
-        return
+function GetVideoElementByIndex(videos, index) {
 
-    if (event.data && (event.data == "SubmitVT")) {
-        // TODO: Error Handling
-        let JForm = CreateJForm();
-        chrome.runtime.sendMessage({greeting : "SubmitVT", data : JForm}, function (response) {
-            if (response.farewell == true) {
-                console.error("An Error occured trying to add your curated filters.");
-            } else if (response.farewell == false) {
-                console.log("Success! Curated Filters added.");
-            }
-        });
-    }
-})
+}
+
+function RemoveVideoElement(videos, element) {
+
+}
+
+function FilterHomePage() {
+    let contents = GetSection();
+    let videoIDs = [];
+    // TODO: Depending on users options remove posts
+    // let sections = contents.getElementsByTagName("ytd-rich-section-renderer");
+    let videos = contents.getElementsByTagName("ytd-rich-item-renderer");
+    /* TODO:
+        1. iterate through videos
+            a. Get video id from <a href>
+            b. Add to array
+            c. Send object to API (active filters, array of video ids)
+            API:
+                i.      Receive array
+                ii.     iterate through array to check database if neural network has already processed video
+                iii.    Have neural network process videos not already processed
+                iv.     Iterate through array to check if videos match user filters
+                v.      Send response object (vID : true/false) where true is approved for the user and false isn't
+            d. Remove HTMLElements whose vID has a false value
+    */
+    
+}
 
 function CreateJForm() {
     let formData = new FormData(document.forms.namedItem("VTForm")); 
@@ -190,3 +240,21 @@ function CreateJForm() {
     }
     return JForm;
 }
+
+// TODO: Add user feedback to button
+window.addEventListener("message", function(event) {
+    if (event.source != window)
+        return
+
+    if (event.data && (event.data == "SubmitVT")) {
+        // TODO: Error Handling
+        let JForm = CreateJForm();
+        chrome.runtime.sendMessage({greeting : "SubmitVT", data : JForm}, function (response) {
+            if (response.farewell == true) {
+                console.error("An Error occured trying to add your curated filters.");
+            } else if (response.farewell == false) {
+                console.log("Success! Curated Filters added.");
+            }
+        });
+    }
+})
