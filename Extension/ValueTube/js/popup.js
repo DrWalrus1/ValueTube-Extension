@@ -57,13 +57,6 @@ window.addEventListener('storage', function() {
     }
 });
 
-let scrapeButton = document.getElementById("scrapeButton");
-scrapeButton.onclick = function() {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        chrome.tabs.executeScript(
-            tabs[0].id,
-            {
-                code: 'scrapePage();'
-            })
-    });
-}
+// chrome.storage.local.onChange.addListener(function(changes, storageName){
+//     chrome.browserAction.setBadgeText({"text": "1"});
+// })

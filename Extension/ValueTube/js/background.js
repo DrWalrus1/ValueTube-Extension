@@ -4,8 +4,7 @@
 
 'use strict';
 
-chrome.runtime.onInstalled.addListener(function() {
-
+chrome.runtime.onInstalled.addListener(function(details) {
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([{
       conditions: [new chrome.declarativeContent.PageStateMatcher({
@@ -14,12 +13,14 @@ chrome.runtime.onInstalled.addListener(function() {
           actions: [new chrome.declarativeContent.ShowPageAction()]
     }]);
   });
+
+
+  if (details.reason == "install") {
+    // this logic executes
+} else if(details.reason == "update") {
+    // perform some logic
+}
 });
-
-// TODO: On startup look for update on chrome extension store
-// chrome.runtime.onStartup.addListener(function() {
-
-// });
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
@@ -43,4 +44,13 @@ function sendCuratorData(JForm) {
   //     sendResponse({farewell : true}); // response is the server
   //   }
   // }
+}
+
+function createNotification() {
+
+}
+
+function createUpdateNotification() {
+  chrome.browserAction.setBadgeText({"text": "1"});
+  browser.browserAction.setBadgeBackgroundColor({color: "red"})
 }

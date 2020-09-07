@@ -6,6 +6,7 @@ window.onload = function() {
         if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
     })
 };
+
 function createCuratorDiv() {
     if (document.getElementById("VTCurator")) {
         return;
