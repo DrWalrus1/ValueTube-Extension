@@ -155,6 +155,33 @@ function getVideoID() {
 }
 
 
+// create an array that allows to pass a string of words. 
+// create an array that passess tag (youtube tag "href")
+//copied from youtube link search "avengers trailer"
+
+function returnVideo(){
+
+    let contents = getVideoID();
+    let getVideoID = []; 
+
+    let href = document.getElementById('ytd-video-renderer').value.setAttribute("onclick"); 
+    videos.forEach(element => {
+        link = element.getElementById("a")[0];
+        
+    });
+
+<a 
+    id="video-title" 
+    class="yt-simple-endpoint style-scope ytd-video-renderer" 
+    title="Marvel Studios' Avengers: Infinity War Official Trailer" 
+    href="/watch?v=6ZfuNTqbHE8" 
+    aria-label="Marvel Studios' Avengers: Infinity War Official Trailer by Marvel Entertainment 2 years ago 2 minutes, 25 seconds 240,373,675 views">
+                <yt-formatted-string 
+                    class="style-scope ytd-video-renderer" 
+                    aria-label="Marvel Studios' Avengers: Infinity War Official Trailer by Marvel Entertainment 2 years ago 2 minutes, 25 seconds 240,373,675 views">Marvel Studios' Avengers: Infinity War Official Trailer</yt-formatted-string>
+              </a>
+}
+ 
 // TODO: Add user feedback to button
 window.addEventListener("message", function(event) {
     if (event.source != window)
