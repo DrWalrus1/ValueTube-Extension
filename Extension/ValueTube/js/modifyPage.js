@@ -13,21 +13,40 @@ const page = {
 let primaryInner = document.getElementById("primary-inner");
 
 window.onload = function() {
+    // FIXME: check url to see what functions need to run on what pages
     chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
         if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
     })
 };
+
+//TODO: Add function to trigger window.sendMessage
 
 function getVideoID() {
     let url = new URLSearchParams(window.location.search);
     return url.get('v');
 }
 
+/**
+ * 
+ * @param {URL} url 
+ */
+function getVideoID(url) {
+    return (new URLSearchParams(url.search)).get('v');
+}
+
 // TODO: add functionality that checks current page url with matching enum url
+/**
+ * 
+ * @param {page} desiredPage 
+ */
 function CheckPage(desiredPage) {
     return true;
 }
 
+/**
+ * 
+ * @param {Array<String>} categoryArray 
+ */
 function addCategories(categoryArray) {
     let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
     categoryArray.forEach(element => {
@@ -170,18 +189,6 @@ function removeCuratorDiv() {
     }
 }
 
-/*
-TODO:
-DONE - CheckPage() - Check which page the user is currently on (should use enums(HOME, TRENDING, SEARCH, VIDEO, CHANNEL, PLAYLIST, MIX))
-GetSections() - Get array of sections
-GetVideoIDFromElement(HTML Element) - returns videoID of HTML element passed
-GetVideoElement(int) - return DOM element matching id passed
-RemoveVideoElement(HTML Element) - removes selected html element from home page
-FilterHomePage()
-
-Listener for when continuous renderer is executed.
-*/
-
 function GetSection() {
     /* TODO:
         1. Figure out a way of ensuring checking of not only any elements with tag "ytd-rich-item-renderer" and "ytd-rich-section-renderer"
@@ -189,38 +196,52 @@ function GetSection() {
     return document.getElementById("contents");
 }
 
-function GetVideoIDFromElement(element) {
+// TODO: Create generic function for getting videoID from "<a>" element
+/**
+ * 
+ * @param {Element} element 
+ * @param {String} elementType possibly use enum
+ */
+function GetVideoIDFromElement(element, elementType) {
     
 }
 
-function GetVideoElementByIndex(videos, index) {
-
-}
-
-function RemoveVideoElement(videos, element) {
-
+/**
+ * 
+ * @param {Array<Object>} videoObjects An array of objects containing videoID and element object
+ * @param {Array<Object>} APIresponse An array of objects containing videoID and boolean
+ */
+function RemoveVideoElements(videoObjects, APIresponse) {
+    for (let index = 0; index < videoObjects.length; index++) {
+        APIresponse.forEach(element => {
+            if (videoObjects[index]["vID"] == element["vID"] && element["value"] == false) {
+                videoObjects[index]["element"].parentNode.removeChild(videoObjects[index]["element"]);
+                break;
+            } else if (videoObjects[index]["vID"] == element["vID"] && element["value"] == true) {
+                break;
+            }
+        });
+    }
 }
 
 function FilterHomePage() {
     let contents = GetSection();
     let videoIDs = [];
+    let videoObjects = [];
     // TODO: Depending on users options remove posts
     // let sections = contents.getElementsByTagName("ytd-rich-section-renderer");
     let videos = contents.getElementsByTagName("ytd-rich-item-renderer");
-    /* TODO:
-        1. iterate through videos
-            a. Get video id from <a href>
-            b. Add to array
-            c. Send object to API (active filters, array of video ids)
-            API:
-                i.      Receive array
-                ii.     iterate through array to check database if neural network has already processed video
-                iii.    Have neural network process videos not already processed
-                iv.     Iterate through array to check if videos match user filters
-                v.      Send response object (vID : true/false) where true is approved for the user and false isn't
-            d. Remove HTMLElements whose vID has a false value
-    */
-    
+    videos.forEach(element => {
+        let link = element.getElementsByTagName("a")[0].getAttribute("href");
+        let videoID =  getVideoID(new URL(link, "https://www.youtube.com"));
+        // TODO: Triple check correct structure 
+        videoIDs.push({"vID" : videoID, "value" : false});
+        videoObjects.push({"vID" : videoID, "element" : element});
+    });
+    // TODO: Send to API
+    // window.postMessage('FilterHomePage', '*')
+    //TODO: change videoIDs to array that returns from api request
+    RemoveVideoElements(videoObjects, videoIDs);
 }
 
 function CreateJForm() {
