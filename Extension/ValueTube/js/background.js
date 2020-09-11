@@ -27,7 +27,7 @@ chrome.runtime.onMessage.addListener(
     if (request.greeting == "IsCurator")
       sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
     else if (request.greeting == "SubmitVT") {
-      sendCuratorData(request.data);
+      sendResponse({farewell: sendCuratorData(request.data)});
     } else if (request.greeting == "FilterHome") {
       // TODO: Send to API
       sendResponse({farewell: true, data: request.data});
@@ -39,14 +39,15 @@ function sendCuratorData(JForm) {
   submit.open("POST", "https://api.valuetube.net/curator", true);
   submit.setRequestHeader("Content-Type", "application/json")
   submit.send(JSON.stringify(JForm));
-  // submit.onload = function() {
-  //   if (submit.status != 200) { // analyze HTTP status of the response
-  //     sendResponse({farewell : false}); // e.g. 404: Not Found
-  //   } else { // show the result
-  //     // TODO: Error Handling
-  //     sendResponse({farewell : true}); // response is the server
-  //   }
-  // }
+  submit.onload = function() {
+    if (submit.status != 200) { // analyze HTTP status of the response
+      return false; // e.g. 404: Not Found
+    } else { // show the result
+      // TODO: Error Handling
+      console.log("hello");
+      return true; // response is the server
+    }
+  }
 }
 
 function createNotification() {

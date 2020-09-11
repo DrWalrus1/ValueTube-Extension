@@ -350,9 +350,9 @@ window.addEventListener("message", function(event) {
             case windowMessages.SendCurator:
                 let JForm = CreateJForm();
                 chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm}, function (response) {
-                    if (response.farewell == true) {
+                    if (response.farewell == false) {
                         console.error("An Error occured trying to add your curated filters.");
-                    } else if (response.farewell == false) {
+                    } else if (response.farewell == true) {
                         console.log("Success! Curated Filters added.");
                     }
                 });
