@@ -4,21 +4,56 @@
 
 'use strict';
 
-chrome.runtime.onInstalled.addListener(function() {
-
+chrome.runtime.onInstalled.addListener(function(details) {
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([{
       conditions: [new chrome.declarativeContent.PageStateMatcher({
-        pageUrl: {hostEquals: 'www.youtube.com'}, //Extension on active on YouTube only
       })
       ],
           actions: [new chrome.declarativeContent.ShowPageAction()]
     }]);
   });
+
+
+  if (details.reason == "install") {
+    // this logic executes
+} else if(details.reason == "update") {
+    // perform some logic
+}
 });
 
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.greeting == "IsCurator")
       sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
+    else if (request.greeting == "SubmitVT") {
+      sendCuratorData(request.data);
+    } else if (request.greeting == "FilterHome") {
+      // TODO: Send to API
+      sendResponse({farewell: true, data: request.data});
+    }
 });
+
+function sendCuratorData(JForm) {
+  var submit = new XMLHttpRequest();
+  submit.open("POST", "https://api.valuetube.net/curator", true);
+  submit.setRequestHeader("Content-Type", "application/json")
+  submit.send(JSON.stringify(JForm));
+  // submit.onload = function() {
+  //   if (submit.status != 200) { // analyze HTTP status of the response
+  //     sendResponse({farewell : false}); // e.g. 404: Not Found
+  //   } else { // show the result
+  //     // TODO: Error Handling
+  //     sendResponse({farewell : true}); // response is the server
+  //   }
+  // }
+}
+
+function createNotification() {
+
+}
+
+function createUpdateNotification() {
+  chrome.browserAction.setBadgeText({"text": "1"});
+  browser.browserAction.setBadgeBackgroundColor({color: "red"})
+}

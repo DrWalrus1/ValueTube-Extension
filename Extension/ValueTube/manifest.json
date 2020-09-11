@@ -9,18 +9,19 @@
 	},
 	"content_scripts": [
 		{
-			"matches": ["*://www.youtube.com/watch*"],
+			"matches": ["*://www.youtube.com/*"],
 			"js": ["js/modifyPage.js"]
 		}
 	],
-	"page_action" : {
-		"default_popup" : "html/popup.html",
+	"browser_action" : {
 		"default_icon" : {
 			"16" : "images/ValueTube16.png",
 			"32" : "images/ValueTube32.png",
 			"48" : "images/ValueTube48.png",
 			"128" : "images/ValueTube128.png"
-		}
+		},
+		"default_title" : "ValueTube",
+		"default_popup" : "html/popup.html"
 	},
 	"icons": {
 		"16" : "images/ValueTube16.png",
