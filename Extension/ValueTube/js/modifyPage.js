@@ -223,24 +223,48 @@ function GetSection() {
     return document.getElementById("contents");
 }
 
-/**
- * 
- * @param {Array<Object>} videoObjects An array of objects containing videoID and element object
- * @param {Array<Object>} APIresponse An array of objects containing videoID and boolean
- */
-function RemoveVideoElements(videoObjects, APIresponse) {
-    for (let i = 0; i < videoObjects.length; i++) {
-        for (let x = 0; x < APIresponse.length; x++) {
-            if (videoObjects[i]["vID"] == APIresponse[x]["vID"] && element["value"] == false) {
-                videoObjects[i]["element"].parentNode.removeChild(videoObjects[i]["element"]);
-                break;
-            } else if (videoObjects[i]["vID"] == APIresponse[x]["vID"] && APIresponse[x]["value"] == true) {
-                break;
+
+// create an array that allows to pass a string of words. 
+// create an array that passess tag (youtube tag "href")
+//copied from youtube link search "avengers trailer"
+/** 
+* @param {url} url
+*/
+
+function returnVideo(url){
+
+    let contents = getVideoID();
+    let getVideoID = []; 
+
+    let href = document.getElementById('ytd-video-renderer'); 
+    videos.forEach(element => {
+        let link = element.getElementById("a")[0].getAttribute("href");
+        let getVideoID = getVideoID(new URL(link,"http://www.youtube.com"));
+        videos.push({getVideoID : false});
+        
+    });
+
+
+}
+ 
+// TODO: Add user feedback to button
+window.addEventListener("message", function(event) {
+    if (event.source != window)
+        return
+
+    if (event.data && (event.data == "SubmitVT")) {
+        // TODO: Error Handling
+        let JForm = CreateJForm();
+        chrome.runtime.sendMessage({greeting : "SubmitVT", data : JForm}, function (response) {
+            if (response.farewell == true) {
+                console.error("An Error occured trying to add your curated filters.");
+            } else if (response.farewell == false) {
+                console.log("Success! Curated Filters added.");
             }
             
-        }
+        });
     }
-}
+});
 
 /**
  * This function collects every videos ID from the YouTube Homepage
