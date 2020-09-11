@@ -149,6 +149,52 @@ function removeCuratorDiv() {
     }
 }
 
+function removeComments() {
+    commentSection = document.getElementsByTagName("ytd-comments")[0];
+    if (commentSection.getElementsByTagName("ytd-item-section-renderer")[0] != null) {
+        commentSection.getElementsByTagName("ytd-item-section-renderer")[0].style = "display:none";
+        addCommentMessage(commentSection);
+    }
+}
+
+function addCommentMessage(commentSection) {
+    itemSection = document.createElement("ytd-item-section-renderer");
+    itemSection.id = "sections";
+    itemSection.setAttribute("initial-count", "2");
+    itemSection.class = "style-scope ytd-comments";
+
+    commentSection.appendChild(itemSection);
+
+    itemSection = commentSection.getElementsByTagName("ytd-item-section-renderer")[1];
+    for (let index = 0; index < itemSection.childNodes.length; index++) {
+        if (itemSection.childNodes[index].id === "contents") {
+            contents = itemSection.childNodes[index];
+            break;
+        }
+    }
+
+    messageRenderer = document.createElement("ytd-message-renderer");
+    messageRenderer.class = "style-scope ytd-item-section-renderer";
+    contents.appendChild(messageRenderer);
+
+    ytdMessageRenderer = contents.childNodes[0];
+
+    spanText = document.createElement("span");
+    spanText.dir = "auto";
+    spanText.class = "style-scope yt-formatted-string";
+    spanText.innerHTML = "Comments are turned off by the ValueTube Extension";
+
+    for (let index = 0; index < ytdMessageRenderer.childNodes.length; index++) {
+        if (ytdMessageRenderer.childNodes[index].id === "message") {
+            message = ytdMessageRenderer.childNodes[index];
+            break;
+        }
+    }
+
+    message.appendChild(spanText);
+    
+}
+
 function getVideoID() {
     let url = new URLSearchParams(window.location.search);
     return url.get('v');
