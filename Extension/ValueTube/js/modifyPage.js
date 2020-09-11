@@ -227,10 +227,10 @@ function GetSection() {
 // create an array that allows to pass a string of words. 
 // create an array that passess tag (youtube tag "href")
 //copied from youtube link search "avengers trailer"
+
 /** 
 * @param {url} url
 */
-
 function returnVideo(url){
 
     let contents = getVideoID();
@@ -246,25 +246,6 @@ function returnVideo(url){
 
 
 }
- 
-// TODO: Add user feedback to button
-window.addEventListener("message", function(event) {
-    if (event.source != window)
-        return
-
-    if (event.data && (event.data == "SubmitVT")) {
-        // TODO: Error Handling
-        let JForm = CreateJForm();
-        chrome.runtime.sendMessage({greeting : "SubmitVT", data : JForm}, function (response) {
-            if (response.farewell == true) {
-                console.error("An Error occured trying to add your curated filters.");
-            } else if (response.farewell == false) {
-                console.log("Success! Curated Filters added.");
-            }
-            
-        });
-    }
-});
 
 /**
  * This function collects every videos ID from the YouTube Homepage
