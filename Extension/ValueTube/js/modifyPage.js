@@ -1,12 +1,91 @@
 const categoryArray = ["Adult Content", "Alcohol/Drugs", "Comedy", "Conspiracy", "Education", "Gambling", "Gaming", "Horror", "LGBT", "Movies/TV", "Music", "News/Politics", "Promotional", "Religion", "Romance", "Sports", "Violence", "Vlog"];
-let primaryInner = document.getElementById("primary-inner");
-
-window.onload = function() {
-    chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
-        if (!document.getElementById("VTCurator") && response.farewell == "true") {createCuratorDiv();}
-    })
+//TODO: change enum values to corresponding urls
+const page = {
+    HOME : "https://www.youtube.com/",
+    TRENDING : "https://www.youtube.com/feed/trending",
+    SUBSCRIPTIONS : "https://www.youtube.com/feed/subscriptions",
+    SEARCH : "https://www.youtube.com/results",
+    VIDEO : "https://www.youtube.com/watch",
+    CHANNEL : "https://www.youtube.com/channel", // FIXME: Multiple urls
+    PLAYLIST : "https://www.youtube.com/playlist",
+    MIX : "https://www.youtube.com/watch?v=&list="
 };
 
+// TODO: Add window message enum
+const windowMessages = {
+    SendCurator : "SubmitVT",
+    FilterHome : "FilterHome"
+};
+
+let primaryInner = document.getElementById("primary-inner");
+
+//Checks on initial visit to youtube page
+window.onload = function() {
+    OnPageChange();
+};
+
+//Checks on page change (YouTube does partial loads and can be detected by 'yt-navigate-start' and 'yt-navigate-finish')
+window.addEventListener('yt-navigate-finish', OnPageChange);
+//TODO: Add function to trigger window.sendMessage
+
+/**
+ * Gets Video ID from url
+ */
+function getVideoID() {
+    let url = new URLSearchParams(window.location.search);
+    return url.get('v');
+}
+
+/**
+ * 
+ * @param {URL} url 
+ */
+function getVideoID(url) {
+    return (new URLSearchParams(url.search)).get('v');
+}
+
+// FIXME
+function OnPageChange() {
+    switch (window.location.href) {
+        case (page.HOME):
+            window.postMessage(windowMessages.FilterHome, '*');
+            break;
+        // case (page.TRENDING):
+            // FilterTrendingPage();
+            // break;
+        // case (page.SUBSCRIPTIONS):
+            // FilterSubscriptionsPage();
+            // break;
+        default:
+            // TODO: check for parameters not just string match
+            if ( (window.location.href).includes(page.VIDEO)) {
+                chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
+                    if (!document.getElementById("VTCurator") && response.farewell == "true") {
+                        createCuratorDiv();
+                    }
+                });
+                // Filter Recommendations
+            }
+    }
+}
+
+/**
+ * Used in curator mode, this function iterates through and creates checkboxes
+ * @param {Array<String>} categoryArray 
+ */
+function addCategories(categoryArray) {
+    let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
+    categoryArray.forEach(element => {
+        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"filters[]\" value=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
+    });
+
+    innerHTML += "</div>";
+    return innerHTML;
+}
+
+/**
+ * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled. This is only for creating training data for the neural network
+ */
 function createCuratorDiv() {
     if (document.getElementById("VTCurator")) {
         return;
@@ -36,9 +115,7 @@ function createCuratorDiv() {
     VTForm.setAttribute("id", "VTForm");
     VTForm.setAttribute("name", "VTForm");
     VTForm.setAttribute("enctype", "multipart/form-data");
-    VTForm.setAttribute("action", "https://api.valuetube.net/curator")
     VTForm.setAttribute("method", "post");
-    VTForm.setAttribute("target", "_blank");
     a.appendChild(VTForm);
 
     let heading = document.createElement("h2");
@@ -116,7 +193,7 @@ function createCuratorDiv() {
     paperButton.setAttribute("aria-disabled", "false");
     paperButton.setAttribute("style", "background-color: #00a6ff; display: inline-block; margin-right: 40px;");
 
-    paperButton.setAttribute("onclick", "window.postMessage('SubmitVT', '*')");
+    paperButton.setAttribute("onclick", "window.postMessage('" + windowMessages.SendCurator + "', '*')");
 
     buttonRenderer.appendChild(paperButton);
 
@@ -129,16 +206,9 @@ function createCuratorDiv() {
     
 }
 
-function addCategories(categoryArray) {
-    let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
-    categoryArray.forEach(element => {
-        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"filters[]\" value=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
-    });
-
-    innerHTML += "</div>";
-    return innerHTML;
-}
-
+/**
+ * Removes Creator div, only works on video page
+ */
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
@@ -149,29 +219,52 @@ function removeCuratorDiv() {
     }
 }
 
-function getVideoID() {
-    let url = new URLSearchParams(window.location.search);
-    return url.get('v');
+function GetSection() {
+    return document.getElementById("contents");
 }
 
-
-// TODO: Add user feedback to button
-window.addEventListener("message", function(event) {
-    if (event.source != window)
-        return
-
-    if (event.data && (event.data == "SubmitVT")) {
-        // TODO: Error Handling
-        let JForm = CreateJForm();
-        chrome.runtime.sendMessage({greeting : "SubmitVT", data : JForm}, function (response) {
-            if (response.farewell == true) {
-                console.error("An Error occured trying to add your curated filters.");
-            } else if (response.farewell == false) {
-                console.log("Success! Curated Filters added.");
+/**
+ * 
+ * @param {Array<Object>} videoObjects An array of objects containing videoID and element object
+ * @param {Array<Object>} APIresponse An array of objects containing videoID and boolean
+ */
+function RemoveVideoElements(videoObjects, APIresponse) {
+    for (let i = 0; i < videoObjects.length; i++) {
+        for (let x = 0; x < APIresponse.length; x++) {
+            if (videoObjects[i]["vID"] == APIresponse[x]["vID"] && element["value"] == false) {
+                videoObjects[i]["element"].parentNode.removeChild(videoObjects[i]["element"]);
+                break;
+            } else if (videoObjects[i]["vID"] == APIresponse[x]["vID"] && APIresponse[x]["value"] == true) {
+                break;
             }
-        });
+            
+        }
     }
-})
+}
+
+/**
+ * This function collects every videos ID from the YouTube Homepage
+*/
+function GetHomePageVideoIDs() {
+    let contents = GetSection();
+    let videoIDs = [];
+    let videoObjects = [];
+    // TODO: Depending on users options remove posts
+    // let sections = contents.getElementsByTagName("ytd-rich-section-renderer");
+    let videos = contents.getElementsByTagName("ytd-rich-item-renderer");
+    for (let index = 0; index < videos.length; index++) {
+        let link = videos[index].getElementsByTagName("a")[0].getAttribute("href");
+        let videoID =  getVideoID(new URL(link, "https://www.youtube.com"));
+        // If first link is a channel ID (e.g. youtube posts)
+        if (videoID == null) {
+            continue;
+        }
+        // TODO: Triple check correct structure 
+        videoIDs.push({"vID" : videoID, "value" : false});
+        videoObjects.push({"vID" : videoID, "element" : videos[index]});
+    }
+    return {videoIDs, videoObjects};
+}
 
 function CreateJForm() {
     let formData = new FormData(document.forms.namedItem("VTForm")); 
@@ -190,3 +283,42 @@ function CreateJForm() {
     }
     return JForm;
 }
+
+// TODO: Add user feedback to button
+window.addEventListener("message", function(event) {
+    if (event.source != window)
+        return
+
+    if (event.data) {
+        switch (event.data) {
+            case windowMessages.SendCurator:
+                let JForm = CreateJForm();
+                chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm}, function (response) {
+                    if (response.farewell == true) {
+                        console.error("An Error occured trying to add your curated filters.");
+                    } else if (response.farewell == false) {
+                        console.log("Success! Curated Filters added.");
+                    }
+                });
+                break;
+            case windowMessages.FilterHome:
+                let homePageInfo = GetHomePageVideoIDs();
+                chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]}, function (response) {
+                    if (!response.farewell) {
+                        console.error("An Error occured trying to filter the home page");
+                    } else if (response.farewell) {
+                        console.log("Success! Home page filtered!");
+                        console.log("Extension Response: ");
+                        console.log(response.data);
+                        // TODO: Use APIResponse Data
+                        // RemoveVideoElements(homePageInfo[1], response.farewell.data);
+                    }
+                });
+                break;
+            default:
+                console.error("Error: Unknown message");
+                break;
+        }
+    }
+        // TODO: Error Handling   
+})

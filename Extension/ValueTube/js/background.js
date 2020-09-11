@@ -28,6 +28,9 @@ chrome.runtime.onMessage.addListener(
       sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
     else if (request.greeting == "SubmitVT") {
       sendCuratorData(request.data);
+    } else if (request.greeting == "FilterHome") {
+      // TODO: Send to API
+      sendResponse({farewell: true, data: request.data});
     }
 });
 
