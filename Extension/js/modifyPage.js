@@ -1,5 +1,4 @@
 const categoryArray = ["Adult Content", "Alcohol/Drugs", "Comedy", "Conspiracy", "Education", "Gambling", "Gaming", "Horror", "LGBT", "Movies/TV", "Music", "News/Politics", "Promotional", "Religion", "Romance", "Sports", "Violence", "Vlog"];
-//TODO: change enum values to corresponding urls
 const page = {
     HOME : "https://www.youtube.com/",
     TRENDING : "https://www.youtube.com/feed/trending",
@@ -11,7 +10,6 @@ const page = {
     MIX : "https://www.youtube.com/watch?v=&list="
 };
 
-// TODO: Add window message enum
 const windowMessages = {
     SendCurator : "SubmitVT",
     FilterHome : "FilterHome"
@@ -26,7 +24,6 @@ window.onload = function() {
 
 //Checks on page change (YouTube does partial loads and can be detected by 'yt-navigate-start' and 'yt-navigate-finish')
 window.addEventListener('yt-navigate-finish', OnPageChange);
-//TODO: Add function to trigger window.sendMessage
 
 /**
  * Gets Video ID from url
@@ -315,7 +312,6 @@ function GetHomePageVideoIDs() {
         if (videoID == null) {
             continue;
         }
-        // TODO: Triple check correct structure 
         videoIDs.push({"vID" : videoID, "value" : false});
         videoObjects.push({"vID" : videoID, "element" : videos[index]});
     }
@@ -340,13 +336,13 @@ function CreateJForm() {
     return JForm;
 }
 
-// TODO: Add user feedback to button
 window.addEventListener("message", function(event) {
     if (event.source != window)
         return
 
     if (event.data) {
         switch (event.data) {
+            // TODO: Add user feedback to button
             case windowMessages.SendCurator:
                 let JForm = CreateJForm();
                 chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm}, function (response) {
