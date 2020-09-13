@@ -4,6 +4,12 @@
 
 'use strict';
 
+const windowMessages = {
+  SendCurator : "SubmitVT",
+  FilterHome : "FilterHome",
+  SearchPage : "SearchPage"
+};
+
 chrome.runtime.onInstalled.addListener(function(details) {
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([{
@@ -26,9 +32,9 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.greeting == "IsCurator")
       sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
-    else if (request.greeting == "SubmitVT") {
+    else if (request.greeting == windowMessages.SendCurator) {
       sendResponse({farewell: sendCuratorData(request.data)});
-    } else if (request.greeting == "FilterHome") {
+    } else if (request.greeting == windowMessages.FilterHome || request.greeting == windowMessages.SearchPage) {
       // TODO: Send to API
       sendFilterData(request.data);
       // sendResponse({farewell: true, data: request.data});
