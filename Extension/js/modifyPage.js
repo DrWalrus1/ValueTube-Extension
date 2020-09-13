@@ -266,12 +266,6 @@ function addCommentMessage(commentSection) {
     
 }
 
-function getVideoID() {
-    let url = new URLSearchParams(window.location.search);
-    return url.get('v');
-}
-
-
 // create an array that allows to pass a string of words. 
 // create an array that passess tag (youtube tag "href")
 //copied from youtube link search "avengers trailer"
@@ -312,7 +306,7 @@ function GetHomePageVideoIDs() {
         if (videoID == null) {
             continue;
         }
-        videoIDs.push({"vID" : videoID, "value" : false});
+        videoIDs.push(videoID);
         videoObjects.push({"vID" : videoID, "element" : videos[index]});
     }
     return {videoIDs, videoObjects};

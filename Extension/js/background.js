@@ -30,14 +30,15 @@ chrome.runtime.onMessage.addListener(
       sendResponse({farewell: sendCuratorData(request.data)});
     } else if (request.greeting == "FilterHome") {
       // TODO: Send to API
-      sendResponse({farewell: true, data: request.data});
+      sendFilterData(request.data);
+      // sendResponse({farewell: true, data: request.data});
     }
 });
 
 function sendCuratorData(JForm) {
   var submit = new XMLHttpRequest();
   submit.open("POST", "https://api.valuetube.net/curator", true);
-  submit.setRequestHeader("Content-Type", "application/json")
+  submit.setRequestHeader("Content-Type", "application/json");
   submit.send(JSON.stringify(JForm));
   submit.onload = function() {
     if (submit.status != 200) { // analyze HTTP status of the response
@@ -45,6 +46,22 @@ function sendCuratorData(JForm) {
     } else { // show the result
       // TODO: Error Handling
       console.log("hello");
+      return true; // response is the server
+    }
+  }
+}
+
+function sendFilterData(videoIDs) {
+  var submit = new XMLHttpRequest();
+  submit.open("POST", "https://api.valuetube.net/filter/home", true);
+  submit.setRequestHeader("Content-Type", "application/json");
+  submit.send(JSON.stringify({videoIDs : videoIDs}));
+
+  submit.onload = function() {
+    if (submit.status != 200) { // analyze HTTP status of the response
+      return false; // e.g. 404: Not Found
+    } else { // show the result
+      // TODO: Error Handling
       return true; // response is the server
     }
   }
