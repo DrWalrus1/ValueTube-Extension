@@ -12,7 +12,8 @@ const page = {
 
 const windowMessages = {
     SendCurator : "SubmitVT",
-    FilterHome : "FilterHome"
+    FilterHome : "FilterHome",
+    SearchPage : "SearchPage"
 };
 
 let primaryInner = document.getElementById("primary-inner");
@@ -81,7 +82,8 @@ function addCategories(categoryArray) {
 }
 
 /**
- * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled. This is only for creating training data for the neural network
+ * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled. 
+ * This is only for creating training data for the neural network.
  */
 function createCuratorDiv() {
     if (document.getElementById("VTCurator")) {
@@ -270,10 +272,8 @@ function addCommentMessage(commentSection) {
 // create an array that passess tag (youtube tag "href")
 //copied from youtube link search "avengers trailer"
 
-/** 
-* @param {url} url
-*/
-function returnVideo(url){
+
+function GetSearchPageVideoIDs() {
 
     let contents = getVideoID();
     let getVideoID = []; 
@@ -282,11 +282,10 @@ function returnVideo(url){
     videos.forEach(element => {
         let link = element.getElementById("a")[0].getAttribute("href");
         let getVideoID = getVideoID(new URL(link,"http://www.youtube.com"));
-        videos.push({getVideoID : false});
+        videos.push(getVideoID);
         
     });
-
-
+    return videos;
 }
 
 /**
@@ -357,6 +356,21 @@ window.addEventListener("message", function(event) {
                         console.log("Extension Response: ");
                         console.log(response.data);
                         // TODO: Use APIResponse Data
+                        // RemoveVideoElements(homePageInfo[1], response.farewell.data);
+                    }
+                });
+                break;
+            case windowMessages.SearchPage:
+                let searchPageVideoIDs = GetSearchPageVideoIDs();
+                chrome.runtime.sendMessage({greeting : windowMessages.SearchPage, data : searchPageVideoIDs}, function (response) {
+                    if (!response.farewell) {
+                        console.error("An Error occured trying to filter the home page");
+                    } else if (response.farewell) {
+                        console.log("Success! Home page filtered!");
+                        console.log("Extension Response: ");
+                        console.log(response.data);
+                        // TODO: Use APIResponse Data
+                        // TODO: (Momo) RemoveVideoElements for search page
                         // RemoveVideoElements(homePageInfo[1], response.farewell.data);
                     }
                 });
