@@ -61,6 +61,11 @@ function OnPageChange() {
                         createCuratorDiv();
                     }
                 });
+                chrome.runtime.sendMessage({greeting: "DisableComments"}, function(response) {
+                    if (response.farewell == "true") {
+                        removeComments();
+                    }
+                });
                 // Filter Recommendations
             }
     }
@@ -221,11 +226,20 @@ function GetSection() {
 }
 
 function removeComments() {
-    commentSection = document.getElementsByTagName("ytd-comments")[0];
-    if (commentSection.getElementsByTagName("ytd-item-section-renderer")[0] != null) {
-        commentSection.getElementsByTagName("ytd-item-section-renderer")[0].style = "display:none";
-        addCommentMessage(commentSection);
-    }
+    const commentSection = document.getElementsByTagName("ytd-comments")[0];
+
+    let observer = new MutationObserver(mutations => {
+        for(let mutation of mutations) {
+             for(let addedNode of mutation.addedNodes) {
+                 if (addedNode.parentElement === commentSection && addedNode.nodeName === "YTD-ITEM-SECTION-RENDERER") {
+                    observer.disconnect();
+                    addedNode.parentNode.removeChild(addedNode);
+                    addCommentMessage(commentSection);
+                  }
+              }
+         }
+     });
+     observer.observe(commentSection, { childList: true, subtree: true });
 }
 
 function addCommentMessage(commentSection) {
@@ -236,7 +250,7 @@ function addCommentMessage(commentSection) {
 
     commentSection.appendChild(itemSection);
 
-    itemSection = commentSection.getElementsByTagName("ytd-item-section-renderer")[1];
+    itemSection = commentSection.getElementsByTagName("ytd-item-section-renderer")[0];
     for (let index = 0; index < itemSection.childNodes.length; index++) {
         if (itemSection.childNodes[index].id === "contents") {
             contents = itemSection.childNodes[index];

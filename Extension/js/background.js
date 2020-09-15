@@ -26,9 +26,11 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
     if (request.greeting == "IsCurator")
       sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
-    else if (request.greeting == "SubmitVT") {
+    else if (request.greeting == "SubmitVT")
       sendResponse({farewell: sendCuratorData(request.data)});
-    } else if (request.greeting == "FilterHome") {
+    else if (request.greeting == "DisableComments")
+      sendResponse({farewell: localStorage.getItem("VTDisableComments")})
+    else if (request.greeting == "FilterHome") {
       // TODO: Send to API
       sendFilterData(request.data);
       // sendResponse({farewell: true, data: request.data});
