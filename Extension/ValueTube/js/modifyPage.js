@@ -64,6 +64,11 @@ function OnPageChange() {
                         createCuratorDiv();
                     }
                 });
+                chrome.runtime.sendMessage({greeting: "DisableComments"}, function(response) {
+                    if (response.farewell == "true") {
+                        removeComments();
+                    }
+                });
                 // Filter Recommendations
             }
     }
