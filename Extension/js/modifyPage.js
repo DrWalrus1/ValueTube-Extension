@@ -273,7 +273,7 @@ function removeComments() {
 }
 
 function addCommentMessage(commentSection) {
-    itemSection = document.createElement("ytd-item-section-renderer");
+    let itemSection = document.createElement("ytd-item-section-renderer");
     itemSection.id = "sections";
     itemSection.setAttribute("initial-count", "2");
     itemSection.class = "style-scope ytd-comments";
