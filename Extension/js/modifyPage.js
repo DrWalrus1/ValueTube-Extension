@@ -208,7 +208,6 @@ function createCuratorDiv() {
     
 }
 
-<<<<<<< HEAD
 function ModifyRecommendationFeed() {
     let videoIDs = [];
 
@@ -242,11 +241,6 @@ function addCategories(categoryArray) {
     return innerHTML;
 }
 
-=======
-/**
- * Removes Creator div, only works on video page
- */
->>>>>>> dacf150744aac0288042340564fbf7bb2359beb4
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
