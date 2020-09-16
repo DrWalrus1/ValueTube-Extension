@@ -208,6 +208,25 @@ function createCuratorDiv() {
 
 <<<<<<< HEAD
 function ModifyRecommendationFeed() {
+    let videoIDs = [];
+
+	let videos = document.getElementsByTagName('ytd-compact-video-renderer');
+
+	for(index = 0; index < videos.length; index++){
+
+		let link = videos[index].getElementsByTagName("a")[0].getAttribute('href');
+
+		let videoID = getVideoId(new URL(link, "https://www.youtube.com"))
+
+		if(videoID == null){
+			continue;
+		}
+		
+		videoIDs.push({"vID": videoID, "value": false});
+	}
+
+
+	return videoIDs;
     
 }
 
