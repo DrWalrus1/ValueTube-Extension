@@ -208,9 +208,45 @@ function createCuratorDiv() {
     
 }
 
+<<<<<<< HEAD
+function ModifyRecommendationFeed() {
+    let videoIDs = [];
+
+	let videos = document.getElementsByTagName('ytd-compact-video-renderer');
+
+	for(index = 0; index < videos.length; index++){
+
+		let link = videos[index].getElementsByTagName("a")[0].getAttribute('href');
+
+		let videoID = getVideoId(new URL(link, "https://www.youtube.com"))
+
+		if(videoID == null){
+			continue;
+		}
+		
+		videoIDs.push({"vID": videoID, "value": false});
+	}
+
+
+	return videoIDs;
+    
+}
+
+function addCategories(categoryArray) {
+    let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
+    categoryArray.forEach(element => {
+        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"filters[]\" value=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
+    });
+
+    innerHTML += "</div>";
+    return innerHTML;
+}
+
+=======
 /**
  * Removes Creator div, only works on video page
  */
+>>>>>>> dacf150744aac0288042340564fbf7bb2359beb4
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
