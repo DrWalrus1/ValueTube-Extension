@@ -1,4 +1,23 @@
-const categoryArray = ["Adult Content", "Alcohol/Drugs", "Comedy", "Conspiracy", "Education", "Gambling", "Gaming", "Horror", "LGBT", "Movies/TV", "Music", "News/Politics", "Promotional", "Religion", "Romance", "Sports", "Violence", "Vlog"];
+const categoryArray = [
+    "Adult Content",
+    "Alcohol/Drugs",
+    "Comedy",
+    "Conspiracy",
+    "Education",
+    "Gambling",
+    "Gaming",
+    "Horror",
+    "LGBT",
+    "Movies/TV",
+    "Music",
+    "News/Politics",
+    "Promotional",
+    "Religion",
+    "Romance",
+    "Sports",
+    "Violence",
+    "Vlog"
+];
 const page = {
     HOME : "https://www.youtube.com/",
     TRENDING : "https://www.youtube.com/feed/trending",
@@ -9,7 +28,6 @@ const page = {
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
 };
-
 const windowMessages = {
     SendCurator : "SubmitVT",
     FilterHome : "FilterHome",
@@ -27,18 +45,10 @@ window.onload = function() {
 window.addEventListener('yt-navigate-finish', OnPageChange);
 
 /**
- * Gets Video ID from url
- */
-function getVideoID() {
-    let url = new URLSearchParams(window.location.search);
-    return url.get('v');
-}
-
-/**
  * 
  * @param {URL} url 
  */
-function getVideoID(url) {
+function getVideoID(url = new URL(window.location.href)) {
     return (new URLSearchParams(url.search)).get('v');
 }
 
@@ -62,6 +72,11 @@ function OnPageChange() {
                         createCuratorDiv();
                     }
                 });
+                chrome.runtime.sendMessage({greeting: "DisableComments"}, function(response) {
+                    if (response.farewell == "true") {
+                        removeComments();
+                    }
+                });
                 // Filter Recommendations
             }
     }
@@ -82,8 +97,8 @@ function addCategories(categoryArray) {
 }
 
 /**
- * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled. 
- * This is only for creating training data for the neural network.
+ * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled.
+ * NOTE: This is only for creating training data for the neural network.
  */
 function createCuratorDiv() {
     if (document.getElementById("VTCurator")) {
@@ -204,10 +219,7 @@ function createCuratorDiv() {
     formattedString.innerHTML = "Submit";
     
 }
-
-/**
- * Removes Creator div, only works on video page
- */
+// ------------------ CURATOR FUNCTIONS ---------------------
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
@@ -217,28 +229,44 @@ function removeCuratorDiv() {
         }
     }
 }
+// ------------------ END CURATOR FUNCTION ------------------
 
 function GetSection() {
     return document.getElementById("contents");
 }
 
-function removeComments() {
-    commentSection = document.getElementsByTagName("ytd-comments")[0];
-    if (commentSection.getElementsByTagName("ytd-item-section-renderer")[0] != null) {
-        commentSection.getElementsByTagName("ytd-item-section-renderer")[0].style = "display:none";
-        addCommentMessage(commentSection);
-    }
+function ModifyRecommendationFeed() {
+    let videoIDs = [];
+
+	let videos = document.getElementsByTagName('ytd-compact-video-renderer');
+
+	for(index = 0; index < videos.length; index++){
+
+		let link = videos[index].getElementsByTagName("a")[0].getAttribute('href');
+
+		let videoID = getVideoId(new URL(link, "https://www.youtube.com"))
+
+		if(videoID == null){
+			continue;
+		}
+		
+		videoIDs.push({"vID": videoID, "value": false});
+	}
+
+
+	return videoIDs;
+    
 }
 
 function addCommentMessage(commentSection) {
-    itemSection = document.createElement("ytd-item-section-renderer");
+    let itemSection = document.createElement("ytd-item-section-renderer");
     itemSection.id = "sections";
     itemSection.setAttribute("initial-count", "2");
     itemSection.class = "style-scope ytd-comments";
 
     commentSection.appendChild(itemSection);
 
-    itemSection = commentSection.getElementsByTagName("ytd-item-section-renderer")[1];
+    itemSection = commentSection.getElementsByTagName("ytd-item-section-renderer")[0];
     for (let index = 0; index < itemSection.childNodes.length; index++) {
         if (itemSection.childNodes[index].id === "contents") {
             contents = itemSection.childNodes[index];
@@ -268,9 +296,22 @@ function addCommentMessage(commentSection) {
     
 }
 
-// create an array that allows to pass a string of words. 
-// create an array that passess tag (youtube tag "href")
-//copied from youtube link search "avengers trailer"
+function removeComments() {
+    const commentSection = document.getElementsByTagName("ytd-comments")[0];
+
+    let observer = new MutationObserver(mutations => {
+        for(let mutation of mutations) {
+             for(let addedNode of mutation.addedNodes) {
+                 if (addedNode.parentElement === commentSection && addedNode.nodeName === "YTD-ITEM-SECTION-RENDERER") {
+                    observer.disconnect();
+                    addedNode.parentNode.removeChild(addedNode);
+                    addCommentMessage(commentSection);
+                  }
+              }
+         }
+     });
+     observer.observe(commentSection, { childList: true, subtree: true });
+}
 
 
 function GetSearchPageVideoIDs() {
@@ -311,6 +352,9 @@ function GetHomePageVideoIDs() {
     return {videoIDs, videoObjects};
 }
 
+/**
+ * This function gets the Form Data from curator and merges that with the videoID.
+ */
 function CreateJForm() {
     let formData = new FormData(document.forms.namedItem("VTForm")); 
     let JForm = {"vID" : getVideoID()};
