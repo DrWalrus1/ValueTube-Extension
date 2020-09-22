@@ -80,15 +80,8 @@ function OnPageChange() {
 
                 // Filter Recommendations
             } else if ((window.location.href).includes(page.SEARCH)) {
-                if (!document.GetSearchPageVideoIDs("SearchPage")) {
-                    createCuratorDiv();
-
-                };// treding Recommendations
-            }else ((window.location.href).includes(page.TRENDING)) {
-                if (!document.getElementById("TRENDING") && response.farewell == "true") { // getelementbyId name not sure. 
-                    createCuratorDiv();
-                }
-            };
+                GetSearchPageVideoIDs()// treding Recommendations
+            }
     }
 }
 
@@ -323,13 +316,13 @@ function removeComments() {
      observer.observe(commentSection, { childList: true, subtree: true });
 }
 
-
+// FIXME
 function GetSearchPageVideoIDs() {
 
-    let contents = getVideoID();
+    let contents = GetSection();
     let getVideoID = []; 
 
-    let href = document.getElementById('ytd-video-renderer'); 
+    let href = contents.getElementById('ytd-video-renderer'); 
     videos.forEach(element => {
         let link = element.getElementById("a")[0].getAttribute("href");
         let getVideoID = getVideoID(new URL(link,"http://www.youtube.com"));
