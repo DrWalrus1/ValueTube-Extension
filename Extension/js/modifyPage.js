@@ -1,4 +1,23 @@
-const categoryArray = ["Adult Content", "Alcohol/Drugs", "Comedy", "Conspiracy", "Education", "Gambling", "Gaming", "Horror", "LGBT", "Movies/TV", "Music", "News/Politics", "Promotional", "Religion", "Romance", "Sports", "Violence", "Vlog"];
+const categoryArray = [
+    "Adult Content",
+    "Alcohol/Drugs",
+    "Comedy",
+    "Conspiracy",
+    "Education",
+    "Gambling",
+    "Gaming",
+    "Horror",
+    "LGBT",
+    "Movies/TV",
+    "Music",
+    "News/Politics",
+    "Promotional",
+    "Religion",
+    "Romance",
+    "Sports",
+    "Violence",
+    "Vlog"
+];
 const page = {
     HOME : "https://www.youtube.com/",
     TRENDING : "https://www.youtube.com/feed/trending",
@@ -9,7 +28,6 @@ const page = {
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
 };
-
 const windowMessages = {
     SendCurator : "SubmitVT",
     FilterHome : "FilterHome"
@@ -200,6 +218,21 @@ function createCuratorDiv() {
     formattedString.innerHTML = "Submit";
     
 }
+// ------------------ CURATOR FUNCTIONS ---------------------
+function removeCuratorDiv() {
+    primaryInner = document.getElementById("primary-inner");
+    for (let index = 0; index < primaryInner.childNodes.length; index++) {
+        if (primaryInner.childNodes[index].id === "VTCurator") {
+            primaryInner.removeChild(primaryInner.childNodes[index]);
+            break;
+        }
+    }
+}
+// ------------------ END CURATOR FUNCTION ------------------
+
+function GetSection() {
+    return document.getElementById("contents");
+}
 
 function ModifyRecommendationFeed() {
     let videoIDs = [];
@@ -222,47 +255,6 @@ function ModifyRecommendationFeed() {
 
 	return videoIDs;
     
-}
-
-function addCategories(categoryArray) {
-    let innerHTML = "<div id=\"categories\" style=\"column-count:2;\">";
-    categoryArray.forEach(element => {
-        innerHTML += "<input type=\"checkbox\" id=\"" + element + "\" name=\"filters[]\" value=\"" + element + "\"><label for=\"" + element + "\">" + element + "</label><br>";
-    });
-
-    innerHTML += "</div>";
-    return innerHTML;
-}
-
-function removeCuratorDiv() {
-    primaryInner = document.getElementById("primary-inner");
-    for (let index = 0; index < primaryInner.childNodes.length; index++) {
-        if (primaryInner.childNodes[index].id === "VTCurator") {
-            primaryInner.removeChild(primaryInner.childNodes[index]);
-            break;
-        }
-    }
-}
-
-function GetSection() {
-    return document.getElementById("contents");
-}
-
-function removeComments() {
-    const commentSection = document.getElementsByTagName("ytd-comments")[0];
-
-    let observer = new MutationObserver(mutations => {
-        for(let mutation of mutations) {
-             for(let addedNode of mutation.addedNodes) {
-                 if (addedNode.parentElement === commentSection && addedNode.nodeName === "YTD-ITEM-SECTION-RENDERER") {
-                    observer.disconnect();
-                    addedNode.parentNode.removeChild(addedNode);
-                    addCommentMessage(commentSection);
-                  }
-              }
-         }
-     });
-     observer.observe(commentSection, { childList: true, subtree: true });
 }
 
 function addCommentMessage(commentSection) {
@@ -303,9 +295,22 @@ function addCommentMessage(commentSection) {
     
 }
 
-// create an array that allows to pass a string of words. 
-// create an array that passess tag (youtube tag "href")
-//copied from youtube link search "avengers trailer"
+function removeComments() {
+    const commentSection = document.getElementsByTagName("ytd-comments")[0];
+
+    let observer = new MutationObserver(mutations => {
+        for(let mutation of mutations) {
+             for(let addedNode of mutation.addedNodes) {
+                 if (addedNode.parentElement === commentSection && addedNode.nodeName === "YTD-ITEM-SECTION-RENDERER") {
+                    observer.disconnect();
+                    addedNode.parentNode.removeChild(addedNode);
+                    addCommentMessage(commentSection);
+                  }
+              }
+         }
+     });
+     observer.observe(commentSection, { childList: true, subtree: true });
+}
 
 /** 
 * @param {url} url
@@ -349,6 +354,9 @@ function GetHomePageVideoIDs() {
     return {videoIDs, videoObjects};
 }
 
+/**
+ * This function gets the Form Data from curator and merges that with the videoID.
+ */
 function CreateJForm() {
     let formData = new FormData(document.forms.namedItem("VTForm")); 
     let JForm = {"vID" : getVideoID()};
