@@ -391,7 +391,7 @@ function FilterChannelHomePage() {
             // Video Shelf
             let items = innerContents["$"]["contents"]["children"][0]["$"]["contents"]["children"][0]["$"]["items"];
             for (let i = 0; i < items.childElementCount; i++) {
-                let videoID = items["children"][0].getElementsByTagName("a")[0].href;
+                let videoID = getVideoID(new URL(items["children"][0].getElementsByTagName("a")[0].href));
                 videoIDs.push(videoID);
                 videoObjects.push({"vID" : videoID, "element" : items["children"][0]});
             }
