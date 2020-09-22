@@ -375,6 +375,28 @@ function CreateJForm() {
     return JForm;
 }
 
+// ------------------ CHANNEL PAGE FUNCTIONS -------------------------
+
+//HOME
+function FilterChannelPage() {
+    let sections = getSection().querySelectorAll("ytd-item-section-renderer");
+    sections.forEach(element => {
+        let innerContents = element["$"]["contents"];
+        if (innerContents["children"][0].tagName.toLowerCase() == "ytd-channel-video-player-renderer") {
+            // Video Player
+        }
+    });
+}
+
+function checkVideoPlayer() {
+
+}
+
+
+
+//VIDEOS
+
+// ------------------ END CHANNEL PAGE FUNCTIONS ---------------------
 window.addEventListener("message", function(event) {
     if (event.source != window)
         return
