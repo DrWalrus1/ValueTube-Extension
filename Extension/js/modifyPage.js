@@ -26,18 +26,10 @@ window.onload = function() {
 window.addEventListener('yt-navigate-finish', OnPageChange);
 
 /**
- * Gets Video ID from url
- */
-function getVideoID() {
-    let url = new URLSearchParams(window.location.search);
-    return url.get('v');
-}
-
-/**
  * 
  * @param {URL} url 
  */
-function getVideoID(url) {
+function getVideoID(url = new URL(window.location.href)) {
     return (new URLSearchParams(url.search)).get('v');
 }
 
@@ -86,7 +78,8 @@ function addCategories(categoryArray) {
 }
 
 /**
- * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled. This is only for creating training data for the neural network
+ * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled.
+ * NOTE: This is only for creating training data for the neural network.
  */
 function createCuratorDiv() {
     if (document.getElementById("VTCurator")) {
