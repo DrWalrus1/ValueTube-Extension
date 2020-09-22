@@ -378,21 +378,27 @@ function CreateJForm() {
 // ------------------ CHANNEL PAGE FUNCTIONS -------------------------
 
 //HOME
-function FilterChannelPage() {
+function FilterChannelHomePage() {
     let sections = getSection().querySelectorAll("ytd-item-section-renderer");
+    let videoIDs = [];
+    let videoObjects = [];
     sections.forEach(element => {
         let innerContents = element["$"]["contents"];
         if (innerContents["children"][0].tagName.toLowerCase() == "ytd-channel-video-player-renderer") {
             // Video Player
+            let videoID = getVideoID(new URL(innerContents.getElementsByClassName("complex-string")[0].children[0].href));
+        } else if (innerContents["children"][0].tagName.toLowerCase() == "ytd-shelf-renderer") {
+            // Video Shelf
+            let items = innerContents["$"]["contents"]["children"][0]["$"]["contents"]["children"][0]["$"]["items"];
+            for (let i = 0; i < items.childElementCount; i++) {
+                let videoID = items["children"][0].getElementsByTagName("a")[0].href;
+                videoIDs.push(videoID);
+                videoObjects.push({"vID" : videoID, "element" : items["children"][0]});
+            }
+
         }
     });
 }
-
-function checkVideoPlayer() {
-
-}
-
-
 
 //VIDEOS
 
