@@ -24,7 +24,7 @@ const page = {
     SUBSCRIPTIONS : "https://www.youtube.com/feed/subscriptions",
     SEARCH : "https://www.youtube.com/results",
     VIDEO : "https://www.youtube.com/watch",
-    CHANNEL : "https://www.youtube.com/channel", // FIXME: Multiple urls
+    CHANNEL : "https://www.youtube.com/channels", // FIXME: Multiple urls
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
 };
@@ -66,7 +66,7 @@ function OnPageChange() {
             // break;
         default:
             // TODO: check for parameters not just string match
-            if ( (window.location.href).includes(page.VIDEO)) {
+            if ((window.location.href).includes(page.VIDEO)) {
                 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
                     if (!document.getElementById("VTCurator") && response.farewell == "true") {
                         createCuratorDiv();
@@ -77,8 +77,18 @@ function OnPageChange() {
                         removeComments();
                     }
                 });
+
                 // Filter Recommendations
-            }
+            } else if ((window.location.href).includes(page.SEARCH)) {
+                if (!document.GetSearchPageVideoIDs("SearchPage")) {
+                    createCuratorDiv();
+
+                };// treding Recommendations
+            }else ((window.location.href).includes(page.TRENDING)) {
+                if (!document.getElementById("TRENDING") && response.farewell == "true") { // getelementbyId name not sure. 
+                    createCuratorDiv();
+                }
+            };
     }
 }
 
@@ -419,10 +429,13 @@ window.addEventListener("message", function(event) {
                     }
                 });
                 break;
+              
             default:
                 console.error("Error: Unknown message");
                 break;
         }
     }
-        // TODO: Error Handling   
+       // TODO: Error Handling   
+     
+
 })
