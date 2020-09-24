@@ -55,7 +55,7 @@ function sendCuratorData(JForm) {
 
 function sendFilterData(videoIDs) {
   var submit = new XMLHttpRequest();
-  submit.open("POST", "https://api.valuetube.net/filter/home", true);
+  submit.open("POST", "https://api.valuetube.net/filter", true);
   submit.setRequestHeader("Content-Type", "application/json");
   submit.send(JSON.stringify({videoIDs : videoIDs}));
 
