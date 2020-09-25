@@ -1,7 +1,3 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 'use strict';
 
 chrome.runtime.onInstalled.addListener(function(details) {
@@ -17,9 +13,9 @@ chrome.runtime.onInstalled.addListener(function(details) {
 
   if (details.reason == "install") {
     // this logic executes
-} else if(details.reason == "update") {
+  } else if(details.reason == "update") {
     // perform some logic
-}
+  }
 });
 
 chrome.runtime.onMessage.addListener(
@@ -27,7 +23,7 @@ chrome.runtime.onMessage.addListener(
     if (request.greeting == "IsCurator")
       sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
     else if (request.greeting == "SubmitVT")
-      sendResponse({farewell: sendCuratorData(request.data)});
+      sendCuratorData(request.data);
     else if (request.greeting == "DisableComments")
       sendResponse({farewell: localStorage.getItem("VTDisableComments")})
     else if (request.greeting == "FilterHome") {
@@ -47,8 +43,13 @@ function sendCuratorData(JForm) {
       return false; // e.g. 404: Not Found
     } else { // show the result
       // TODO: Error Handling
-      console.log("hello");
       return true; // response is the server
+    }
+  }
+    
+  submit.onreadystatechange = function() {
+    if (submit.readyState === 4) {
+      console.log(JSON.parse(submit.response));
     }
   }
 }
@@ -58,7 +59,6 @@ function sendFilterData(videoIDs) {
   submit.open("POST", "https://api.valuetube.net/filter", true);
   submit.setRequestHeader("Content-Type", "application/json");
   submit.send(JSON.stringify({videoIDs : videoIDs}));
-
   submit.onload = function() {
     if (submit.status != 200) { // analyze HTTP status of the response
       return false; // e.g. 404: Not Found
@@ -67,6 +67,13 @@ function sendFilterData(videoIDs) {
       return true; // response is the server
     }
   }
+  
+  submit.onreadystatechange = function() {
+    if (submit.readyState === 4) {
+      console.log(submit.response);
+    }
+  }
+
 }
 
 function createNotification() {
