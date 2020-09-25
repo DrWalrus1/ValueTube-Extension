@@ -64,7 +64,6 @@ function OnPageChange() {
             // FilterSubscriptionsPage();
             // break;
         default:
-            // TODO: check for parameters not just string match
             if ( (window.location.href).includes(page.VIDEO)) {
                 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
                     if (!document.getElementById("VTCurator") && response.farewell == "true") {
@@ -381,7 +380,6 @@ window.addEventListener("message", function(event) {
 
     if (event.data) {
         switch (event.data) {
-            // TODO: Add user feedback to button
             case windowMessages.SendCurator:
                 let JForm = CreateJForm();
                 chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm});
@@ -396,5 +394,4 @@ window.addEventListener("message", function(event) {
                 break;
         }
     }
-        // TODO: Error Handling   
 })

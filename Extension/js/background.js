@@ -49,7 +49,7 @@ function sendCuratorData(JForm) {
     
   submit.onreadystatechange = function() {
     if (submit.readyState === 4) {
-      console.log(JSON.parse(submit.response));
+      createCuratorNotification(JSON.parse(submit.response));
     }
   }
 }
@@ -76,8 +76,40 @@ function sendFilterData(videoIDs) {
 
 }
 
-function createNotification() {
+function createNotification(data) {
+  let img = data["video"]["imgURL"] || 'ValueTube48.png';
+}
 
+/**
+ * 
+ * @param {Object} object 
+ */
+async function createCuratorNotification(object) {
+  console.log(object);
+  var url = await getImage(object["video"]["imgURL"]);
+  if (object["confirmation"] == "success") {
+    console.log(object);
+      var notificationOptions = {
+        type: 'basic',
+        iconUrl: url,
+        title: 'Video Added!',
+        message: "Video: \"" + object["video"]["title"] + "\" has been added to the database."
+      };
+      chrome.notifications.create("CuratorSuccess", notificationOptions);
+  } else {
+    console.log(object);
+  }
+}
+
+async function getImage(url) {
+  var outside;
+  var proxy = "https://cors-anywhere.herokuapp.com/";
+  return fetch(proxy + url)
+    .then(response => response.blob())
+    .then(images => {
+      outside = URL.createObjectURL(images)
+      return outside;
+    })
 }
 
 function createUpdateNotification() {
