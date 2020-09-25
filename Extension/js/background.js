@@ -85,10 +85,8 @@ function createNotification(data) {
  * @param {Object} object 
  */
 async function createCuratorNotification(object) {
-  console.log(object);
-  var url = await getImage(object["video"]["imgURL"]);
   if (object["confirmation"] == "success") {
-    console.log(object);
+    var url = await getImage(object["video"]["imgURL"]);
       var notificationOptions = {
         type: 'basic',
         iconUrl: url,
@@ -96,8 +94,16 @@ async function createCuratorNotification(object) {
         message: "Video: \"" + object["video"]["title"] + "\" has been added to the database."
       };
       chrome.notifications.create("CuratorSuccess", notificationOptions);
-  } else {
-    console.log(object);
+  } else if (object["confirmation"] == "fail") {
+    if (object["error"]["code"] == 501) {
+      var notificationOptions = {
+        type: 'basic',
+        iconUrl: '../images/ValueTube48.png',
+        title: 'Video already exists!',
+        message: "Video: \"" + object["snippet"]["title"] + "\" has already been added to the database."
+      };
+      chrome.notifications.create("CuratorFail", notificationOptions);
+    }
   }
 }
 
