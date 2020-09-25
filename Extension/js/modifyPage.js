@@ -401,6 +401,20 @@ function FilterChannelHomePage() {
 }
 
 //VIDEOS
+function FilterChannelVideoPage() {
+    let primary = document.getElementsByTagName("ytd-two-column-browse-results-renderer");
+    let videoIDs = [];
+    let videoObjects = [];
+    for (let i = 0; i < primary.length; i++) {
+        let innerContents = primary[i].children["primary"].children[0].children["contents"].children[0].children["contents"].children[0]["children"]["items"]
+        for (let index = 0; index < innerContents.childElementCount; index++) {
+            let videoID = getVideoID(innerContents.children[index].getElementsByTagName("a")[0].href);
+            videoIDs.push(videoIDs);
+            videoObjects.push({"vID" : videoID, "element" : innerContents.children[index]});
+        }
+    }
+    return {"videoIDs": videoIDs, "videoObjects": videoObjects};
+}
 
 // ------------------ END CHANNEL PAGE FUNCTIONS ---------------------
 window.addEventListener("message", function(event) {
