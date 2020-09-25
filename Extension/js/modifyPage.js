@@ -24,7 +24,7 @@ const page = {
     SUBSCRIPTIONS : "https://www.youtube.com/feed/subscriptions",
     SEARCH : "https://www.youtube.com/results",
     VIDEO : "https://www.youtube.com/watch",
-    CHANNEL : "https://www.youtube.com/channel", // FIXME: Multiple urls
+    CHANNEL : "https://www.youtube.com/c", // FIXME: Multiple urls
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
 };
@@ -77,6 +77,13 @@ function OnPageChange() {
                     }
                 });
                 // Filter Recommendations
+            } else if ( (window.location.href).includes(page.CHANNEL) ) {
+                if ( (window.location.href).includes("/videos")) {
+                    // VIDEOS PAGE
+                    console.log(FilterChannelVideoPage());
+                } else {
+                    console.log(FilterChannelHomePage());
+                }
             }
     }
 }
@@ -379,17 +386,20 @@ function CreateJForm() {
 
 //HOME
 function FilterChannelHomePage() {
-    let sections = getSection().querySelectorAll("ytd-item-section-renderer");
+    let sections = GetSection().querySelectorAll("ytd-item-section-renderer");
     let videoIDs = [];
     let videoObjects = [];
     sections.forEach(element => {
-        let innerContents = element["$"]["contents"];
+        let innerContents = element.children["contents"];
         if (innerContents["children"][0].tagName.toLowerCase() == "ytd-channel-video-player-renderer") {
             // Video Player
             let videoID = getVideoID(new URL(innerContents.getElementsByClassName("complex-string")[0].children[0].href));
+            videoIDs.push(videoID);
+            videoObjects.push({"vID" : videoID, "element" : innerContents});
         } else if (innerContents["children"][0].tagName.toLowerCase() == "ytd-shelf-renderer") {
             // Video Shelf
-            let items = innerContents["$"]["contents"]["children"][0]["$"]["contents"]["children"][0]["$"]["items"];
+            let items = innerContents.children[0].children[0].children["contents"].children[0].children[1].children[0];
+            console.log(items);
             for (let i = 0; i < items.childElementCount; i++) {
                 let videoID = getVideoID(new URL(items["children"][0].getElementsByTagName("a")[0].href));
                 videoIDs.push(videoID);
@@ -398,6 +408,7 @@ function FilterChannelHomePage() {
 
         }
     });
+    return {"videoIDs": videoIDs, "videoObjects": videoObjects};
 }
 
 //VIDEOS
