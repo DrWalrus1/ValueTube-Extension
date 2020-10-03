@@ -217,6 +217,7 @@ function createCuratorDiv() {
     formattedString.innerHTML = "Submit";
     
 }
+
 // ------------------ CURATOR FUNCTIONS ---------------------
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");

@@ -48,16 +48,6 @@ input:checked + .slider:before {
     -ms-transform: translateX(16px);
     transform: translateX(16px);
 }
-  
-  /* Rounded sliders */
-.slider.round {
-    border-radius: 34px;
-    vertical-align:top;
-}
-  
-.slider.round:before {
-    border-radius: 50%;
-}
 
 .logButtonDiv {
     padding-left: 3cm;
@@ -74,4 +64,14 @@ textarea {
 .caretButton {
     border:none;
     background:none;
+    float:inline-end;
+    float: right;
 }
+
+.btnAlign {
+    display: inline;
+}
+
+
+.toggle.android .toggle-handle { border-radius: 0px; }
+.quick .toggle-group { transition: none;      -webkit-transition: none; }

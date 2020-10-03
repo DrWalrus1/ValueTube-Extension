@@ -1,10 +1,13 @@
 body {
     /* body border only for visualising body size*/
-    border: 1px solid black;
+    margin: 0 0.5em;
     /*background-color: rgb(39, 39, 39); DARK THEME*/
     background-color: whitesmoke;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: black;
-    height: 400px;
-    width: 300px;
+    height: 600px;
+    width: 380px;  
+
 }
+
+
