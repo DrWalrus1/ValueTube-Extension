@@ -1,20 +1,20 @@
 let curatorInput = document.getElementById('curatorInput');
-let videoID;
+let blackListSwitch = document.getElementById("bListSwitch");
+let whiteListSwitch = document.getElementById("wListSwitch");
 
 if (localStorage.getItem("VTCuratorMode") == "true") {
-    document.getElementById("curatorInput").checked = true;
+    curatorInput.checked = true;
 }
 
-//get videoID
-chrome.tabs.query({active: true, currentWindow: true}, ([currentTab]) => {
-    let url_string = currentTab.url;
-    let url = new URL(url_string);
-    videoID = url.searchParams.get("v");
-})
+if (localStorage.getItem("Blacklist") == "true") {
+    blackListSwitch.checked = true;
+}
 
+if (localStorage.getItem("Whitelist") == "true") {
+    whiteListSwitch.checked = true;
+}
 
-
-curatorInput.onclick = function() {
+curatorInput.onchange = function() {
     if (curatorInput.checked == true) {
         localStorage.setItem("VTCuratorMode", "true");
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -36,6 +36,29 @@ curatorInput.onclick = function() {
         
     }
 };
+
+blackListSwitch.onchange = function() {
+    if (blackListSwitch.checked == true) {
+        localStorage.setItem("Blacklist", "true");
+        whiteListSwitch.checked = false;
+        whiteListSwitch.onchange();
+    } else {
+        localStorage.setItem("Blacklist", "false");
+    }
+    save_options();
+}
+
+whiteListSwitch.onchange = function() {
+    console.log("changed");
+    if (whiteListSwitch.checked == true) {
+        localStorage.setItem("Whitelist", "true");
+        blackListSwitch.checked = false;
+        blackListSwitch.onchange();
+    } else {
+        localStorage.setItem("Whitelist", "false");
+    }
+    save_options();
+}
 
 window.addEventListener('storage', function() {
     if (localStorage.getItem("VTCuratorMode") == "true") {
