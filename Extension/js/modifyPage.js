@@ -24,7 +24,7 @@ const page = {
     SUBSCRIPTIONS : "https://www.youtube.com/feed/subscriptions",
     SEARCH : "https://www.youtube.com/results",
     VIDEO : "https://www.youtube.com/watch",
-    CHANNEL : "https://www.youtube.com/c", // FIXME: Multiple urls
+    CHANNEL : ["https://www.youtube.com/c", "https://www.youtube.com/user"], // FIXME: Multiple urls
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
 };
@@ -76,7 +76,7 @@ function OnPageChange() {
                     }
                 });
                 // Filter Recommendations
-            } else if ( (window.location.href).includes(page.CHANNEL) ) {
+            } else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
                 if ( (window.location.href).includes("/videos")) {
                     // VIDEOS PAGE
                     console.log(FilterChannelVideoPage());
@@ -86,6 +86,8 @@ function OnPageChange() {
             }
     }
 }
+
+// ------------------ CURATOR FUNCTIONS ---------------------
 
 /**
  * Used in curator mode, this function iterates through and creates checkboxes
@@ -225,7 +227,6 @@ function createCuratorDiv() {
     
 }
 
-// ------------------ CURATOR FUNCTIONS ---------------------
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
@@ -390,25 +391,75 @@ function FilterChannelHomePage() {
     let videoIDs = [];
     let videoObjects = [];
     sections.forEach(element => {
-        let innerContents = element.children["contents"];
-        if (innerContents["children"][0].tagName.toLowerCase() == "ytd-channel-video-player-renderer") {
-            // Video Player
-            let videoID = getVideoID(new URL(innerContents.getElementsByClassName("complex-string")[0].children[0].href));
-            videoIDs.push(videoID);
-            videoObjects.push({"vID" : videoID, "element" : innerContents});
-        } else if (innerContents["children"][0].tagName.toLowerCase() == "ytd-shelf-renderer") {
-            // Video Shelf
-            let items = innerContents.children[0].children[0].children["contents"].children[0].children[1].children[0];
-            console.log(items);
-            for (let i = 0; i < items.childElementCount; i++) {
-                let videoID = getVideoID(new URL(items["children"][0].getElementsByTagName("a")[0].href));
-                videoIDs.push(videoID);
-                videoObjects.push({"vID" : videoID, "element" : items["children"][0]});
+        for (let i = 0; i < element.children.length; i++) {
+            if (element.children[i].id == "contents") {
+                let sectionContents = element.children[i];
+                switch (sectionContents.children[0].tagName) {
+                    case "YTD-CHANNEL-VIDEO-PLAYER-RENDERER":
+                        GetFeaturedVideoID();
+                        break;
+                    case "YTD-SHELF-RENDERER":
+                        let results = ChannelSearchShelf(sectionContents.children[0]);
+                        videoIDs = videoIDs.concat(results.videoIDs);
+                        videoObjects = videoObjects.concat(results.videoObjects);
+                        break;
+                    default:
+                        console.error("Error: Unexpected Section TagName Found.");
+                        break;
+                }
             }
-
-        }
+        } 
     });
     return {"videoIDs": videoIDs, "videoObjects": videoObjects};
+}
+
+function GetFeaturedVideoID() {
+
+}
+
+/**
+ * 
+ * @param {HTMLElement} shelf 
+ */
+function ChannelSearchShelf(shelf) {
+    // TODO: Add check for if its a shelf of playlists
+    for (let i = 0; i < shelf.children.length; i++) {
+        if (shelf.children[i].id == "dismissable") {
+            let dismissable = shelf.children[i];
+            for (let x = 0; x < dismissable.children.length; x++) {
+                if (dismissable.children[x].id == "contents" && dismissable.children[x].children[0].tagName == "YT-HORIZONTAL-LIST-RENDERER") {
+                    let horizontalList = dismissable.children[x].children[0];
+                    return ChannelSearchHorizontalList(horizontalList);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 
+ * @param {HTMLElement} listElement 
+ */
+function ChannelSearchHorizontalList(listElement) {
+    let videoIDs = [];
+    let videoObjects = [];
+    for (let i = 0; i < listElement.children.length; i++) {
+        if (listElement.children[i].id == "scroll-container") {
+            let items = listElement.children[i].children[0];
+            // Iterate through items
+            for (let x = 0; x < items.children.length; x++) {
+                // TODO: Check if its a playlist renderer
+                // Get links from grid element
+                let links = items.children[x].getElementsByTagName("a");
+                for (const link of links) {
+                    videoIDs.push(getVideoID(new URL(link.href)));
+                    videoObjects.push(items.children[x]);
+                    break;
+                }
+            }
+            return {videoIDs, videoObjects};
+        }
+    }
 }
 
 //VIDEOS
@@ -428,6 +479,7 @@ function FilterChannelVideoPage() {
 }
 
 // ------------------ END CHANNEL PAGE FUNCTIONS ---------------------
+
 window.addEventListener("message", function(event) {
     if (event.source != window)
         return
