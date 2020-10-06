@@ -394,12 +394,15 @@ function FilterChannelHomePage() {
         for (let i = 0; i < element.children.length; i++) {
             if (element.children[i].id == "contents") {
                 let sectionContents = element.children[i];
+                let results;
                 switch (sectionContents.children[0].tagName) {
                     case "YTD-CHANNEL-VIDEO-PLAYER-RENDERER":
-                        GetFeaturedVideoID();
+                        results = GetFeaturedVideoID(sectionContents.children[0]);
+                        videoIDs.push(results.vID)
+                        videoObjects.push(results.element);
                         break;
                     case "YTD-SHELF-RENDERER":
-                        let results = ChannelSearchShelf(sectionContents.children[0]);
+                        results = ChannelSearchShelf(sectionContents.children[0]);
                         videoIDs = videoIDs.concat(results.videoIDs);
                         videoObjects = videoObjects.concat(results.videoObjects);
                         break;
@@ -413,8 +416,20 @@ function FilterChannelHomePage() {
     return {"videoIDs": videoIDs, "videoObjects": videoObjects};
 }
 
-function GetFeaturedVideoID() {
-
+/**
+ * 
+ * @param {HTMLElement} element 
+ */
+function GetFeaturedVideoID(element) {
+    for (let i = 0; i < element.children.length; i++) {
+        if (element.children[i].id == "content") {
+            let content = element.children[i];
+            let links = content.children[0].children[0].querySelectorAll("a");
+            for (const link of links) {
+                return {"vID" : getVideoID(new URL(link.href)), "element" : element};
+            }
+        }
+    }
 }
 
 /**
@@ -448,7 +463,7 @@ function ChannelSearchHorizontalList(listElement) {
             let items = listElement.children[i].children[0];
             // Iterate through items
             for (let x = 0; x < items.children.length; x++) {
-                // TODO: Check if its a playlist renderer
+                // TODO: Check if its a playlist or channel renderer
                 // Get links from grid element
                 let links = items.children[x].getElementsByTagName("a");
                 for (const link of links) {
