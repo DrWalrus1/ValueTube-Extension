@@ -64,7 +64,6 @@ function OnPageChange() {
             // FilterSubscriptionsPage();
             // break;
         default:
-            // TODO: check for parameters not just string match
             if ( (window.location.href).includes(page.VIDEO)) {
                 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
                     if (!document.getElementById("VTCurator") && response.farewell == "true") {
@@ -225,6 +224,7 @@ function createCuratorDiv() {
     formattedString.innerHTML = "Submit";
     
 }
+
 // ------------------ CURATOR FUNCTIONS ---------------------
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
@@ -434,35 +434,18 @@ window.addEventListener("message", function(event) {
 
     if (event.data) {
         switch (event.data) {
-            // TODO: Add user feedback to button
             case windowMessages.SendCurator:
                 let JForm = CreateJForm();
-                chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm}, function (response) {
-                    if (response.farewell == false) {
-                        console.error("An Error occured trying to add your curated filters.");
-                    } else if (response.farewell == true) {
-                        console.log("Success! Curated Filters added.");
-                    }
-                });
+                chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm});
                 break;
             case windowMessages.FilterHome:
+                // TODO: Need to send user filters
                 let homePageInfo = GetHomePageVideoIDs();
-                chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]}, function (response) {
-                    if (!response.farewell) {
-                        console.error("An Error occured trying to filter the home page");
-                    } else if (response.farewell) {
-                        console.log("Success! Home page filtered!");
-                        console.log("Extension Response: ");
-                        console.log(response.data);
-                        // TODO: Use APIResponse Data
-                        // RemoveVideoElements(homePageInfo[1], response.farewell.data);
-                    }
-                });
+                chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]});
                 break;
             default:
-                console.error("Error: Unknown message");
+                console.error("An error occurred trying to communicate with the extension.");
                 break;
         }
     }
-        // TODO: Error Handling   
 })
