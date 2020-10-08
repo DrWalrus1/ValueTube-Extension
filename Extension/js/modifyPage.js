@@ -290,7 +290,7 @@ function addCommentMessage(commentSection) {
     spanText = document.createElement("span");
     spanText.dir = "auto";
     spanText.class = "style-scope yt-formatted-string";
-    spanText.innerHTML = "Comments are turned off by the ValueTube Extension";
+    spanText.innerHTML = "Comments are disabled by the ValueTube Extension.";
 
     for (let index = 0; index < ytdMessageRenderer.childNodes.length; index++) {
         if (ytdMessageRenderer.childNodes[index].id === "message") {
