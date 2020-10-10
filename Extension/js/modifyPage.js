@@ -242,12 +242,25 @@ function GetSection() {
     return document.getElementById("contents");
 }
 
-function ModifyRecommendationFeed() {
+//  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
+
+function GetRecommendationFeedIDs() {
+    let related = document.getElementById("related");
+    let items = related.children[1].children[1];
+    /* TODO:
+        1. get in div with id "related" DONE
+        2. get in div with tagName "ytd-watch-next-secondary-results-renderer" DONE
+        3. get in div with id "items" DONE
+        4. 
+            a) tagName "ytd-compact-autoplay-renderer":
+
+            b) tagName "ytd-compact-video-renderer":
+    */
     let videoIDs = [];
 
 	let videos = document.getElementsByTagName('ytd-compact-video-renderer');
 
-	for(index = 0; index < videos.length; index++){
+	for (index = 0; index < videos.length; index++){
 
 		let link = videos[index].getElementsByTagName("a")[0].getAttribute('href');
 
@@ -264,6 +277,12 @@ function ModifyRecommendationFeed() {
 	return videoIDs;
     
 }
+
+function FilterRecommendationFeed(obj) {
+
+}
+
+//  ------------------ END RECOMMENDATION FEED FUNCTIONS ------------------
 
 function addCommentMessage(commentSection) {
     let itemSection = document.createElement("ytd-item-section-renderer");
