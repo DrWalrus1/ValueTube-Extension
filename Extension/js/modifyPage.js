@@ -79,7 +79,7 @@ function OnPageChange() {
 
                 // Filter Recommendations
             } else if ((window.location.href).includes(page.SEARCH)) {
-                GetSearchPageVideoIDs()// trending Recommendations
+                window.postMessage(windowMessages.SearchPage, '*');
             } else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
                 if ( (window.location.href).includes("/videos")) {
                     // VIDEOS PAGE
@@ -540,21 +540,9 @@ window.addEventListener("message", function(event) {
                 chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]});
                 break;
             case windowMessages.SearchPage:
-                let searchPageVideoIDs = GetSearchPageVideoIDs();
-                chrome.runtime.sendMessage({greeting : windowMessages.SearchPage, data : searchPageVideoIDs}, function (response) {
-                    if (!response.farewell) {
-                        console.error("An Error occured trying to filter the home page");
-                    } else if (response.farewell) {
-                        console.log("Success! Home page filtered!");
-                        console.log("Extension Response: ");
-                        console.log(response.data);
-                        // TODO: Use APIResponse Data
-                        // TODO: (Momo) RemoveVideoElements for search page
-                        // RemoveVideoElements(homePageInfo[1], response.farewell.data);
-                    }
-                });
+                let searchPageVideoIDs = GetSearchPageVideoIDs()["videoIDs"];
+                chrome.runtime.sendMessage({greeting : windowMessages.SearchPage, data : searchPageVideoIDs});
                 break;
-              
             default:
                 console.error("An error occurred trying to communicate with the extension.");
                 break;

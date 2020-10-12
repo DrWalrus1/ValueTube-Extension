@@ -42,8 +42,7 @@ chrome.runtime.onMessage.addListener(
       sendCuratorData(request.data);
     else if (request.greeting == "DisableComments")
       sendResponse({farewell: localStorage.getItem("VTDisableComments")})
-    else if (request.greeting == "FilterHome") {
-      // TODO: Send to API
+    else if (request.greeting == "FilterHome" || request.greeting == "SearchPage") {
       sendFilterData(request.data);
       // sendResponse({farewell: true, data: request.data});
     }
