@@ -324,20 +324,48 @@ function removeComments() {
      observer.observe(commentSection, { childList: true, subtree: true });
 }
 
-// FIXME
 function GetSearchPageVideoIDs() {
+    let videoIDs = [];
+    let videoObjects = [];
+    let searchDiv = document.getElementsByTagName("ytd-search")[0];
+    let section = searchDiv.getElementsByTagName("ytd-section-list-renderer")[0];
 
-    let contents = GetSection();
-    let getVideoID = []; 
+    for (let i = 0; i < section.children.length; i++) {
+        if (section.children[i].id == "contents") {
+            let contents = section.children[i];
+            // Iterate through item section renderers... (collections of video renderers)
+            for (let x = 0; x < contents.getElementsByTagName("ytd-item-section-renderer").length; x++) {
+                let obj = SearchItemSectionRenderer(contents.getElementsByTagName("ytd-item-section-renderer")[x]);
+                videoIDs.concat(obj["videoIDs"]);
+                videoObjects.concat(obj["videoObjects"]);
+            }
+            break;
+        }
+    }
 
-    let href = contents.getElementById('ytd-video-renderer'); 
-    videos.forEach(element => {
-        let link = element.getElementById("a")[0].getAttribute("href");
-        let getVideoID = getVideoID(new URL(link,"http://www.youtube.com"));
-        videos.push(getVideoID);
-        
-    });
-    return videos;
+    return {videoIDs, videoObjects};
+}
+
+function SearchItemSectionRenderer(itemSection) {
+    let videoIDs = [];
+    let videoObjects = [];
+    let items;
+    for (let i = 0; i < itemSection.children.length; i++) {
+        if (itemSection.children[i].id == "contents") {
+            items = itemSection.children[i].children;
+            break;
+        }
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].tagName == "YTD-VIDEO-RENDERER") {
+            videoIDs.push(getVideoID(new URL(items[i].getElementsByTagName("a")[0].href)));
+            videoObjects.push(items[i])
+        }
+    }
+    return {videoIDs, videoObjects};
+
+
 }
 
 /**
