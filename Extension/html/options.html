@@ -2,15 +2,40 @@
   <html>
     <head>
       <link rel="stylesheet" href="../css/toggleswitch.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <link rel="stylesheet" href="../css/bootstrap.min.css">
+      <link rel="stylesheet" href="../css/popup.css">
     </head>
     <body>
+      <div class="flex-container space-between">
+        <a href="popup.html"><button class="caretButton"><i class="fa fa-caret-left"></i></button></a>
+        <h2>Options</h2>
+        <div style="visibility: hidden;"><button class="caretButton"><i class="fa fa-caret-right"></i></button></div>
+      </div>
+      <hr>
       <div>
         <label for="blockComments">Disable the comment section: </label>
-        <label id="blockComments" class="switch">
-          <input type="checkbox" id="blockCommentsInput">
-          <span class="slider round"></span>
+        <label style="display: inline-block;" id="blockComments" class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="blockCommentsInput">
+          <label class="custom-control-label" for="blockCommentsInput"></label> 
+        </label>
+        <label for="developerMode">Enable Developer Mode: </label>
+        <label style="display: inline-block;" id="developerMode" class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="enableDeveloperMode">
+          <label class="custom-control-label" for="enableDeveloperMode"></label> 
         </label>
       </div>
+      <div id="developerOptions" style="visibility:hidden">
+        <hr>
+        <div>
+          <label for="developerNotifications">Enable Developer Notifications: </label>
+          <label style="display: inline-block;" id="developerNotifications" class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="enableDeveloperNotifications">
+            <label class="custom-control-label" for="enableDeveloperNotifications"></label> 
+          </label>
+        </div>
+      </div>
     </body>
+    <script src="../js/storage.js"></script>
     <script src="../js/options.js"></script>
   </html>

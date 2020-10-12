@@ -24,7 +24,7 @@ const page = {
     SUBSCRIPTIONS : "https://www.youtube.com/feed/subscriptions",
     SEARCH : "https://www.youtube.com/results",
     VIDEO : "https://www.youtube.com/watch",
-    CHANNEL : "https://www.youtube.com/channels", // FIXME: Multiple urls
+    CHANNEL : ["https://www.youtube.com/c", "https://www.youtube.com/user"], // FIXME: Multiple urls
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
 };
@@ -65,8 +65,7 @@ function OnPageChange() {
             // FilterSubscriptionsPage();
             // break;
         default:
-            // TODO: check for parameters not just string match
-            if ((window.location.href).includes(page.VIDEO)) {
+            if ( (window.location.href).includes(page.VIDEO)) {
                 chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
                     if (!document.getElementById("VTCurator") && response.farewell == "true") {
                         createCuratorDiv();
@@ -80,10 +79,19 @@ function OnPageChange() {
 
                 // Filter Recommendations
             } else if ((window.location.href).includes(page.SEARCH)) {
-                GetSearchPageVideoIDs()// treding Recommendations
+                GetSearchPageVideoIDs()// trending Recommendations
+            } else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
+                if ( (window.location.href).includes("/videos")) {
+                    // VIDEOS PAGE
+                    console.log(FilterChannelVideoPage());
+                } else {
+                    console.log(FilterChannelHomePage());
+                }
             }
     }
 }
+
+// ------------------ CURATOR FUNCTIONS ---------------------
 
 /**
  * Used in curator mode, this function iterates through and creates checkboxes
@@ -222,7 +230,7 @@ function createCuratorDiv() {
     formattedString.innerHTML = "Submit";
     
 }
-// ------------------ CURATOR FUNCTIONS ---------------------
+
 function removeCuratorDiv() {
     primaryInner = document.getElementById("primary-inner");
     for (let index = 0; index < primaryInner.childNodes.length; index++) {
@@ -286,7 +294,7 @@ function addCommentMessage(commentSection) {
     spanText = document.createElement("span");
     spanText.dir = "auto";
     spanText.class = "style-scope yt-formatted-string";
-    spanText.innerHTML = "Comments are turned off by the ValueTube Extension";
+    spanText.innerHTML = "Comments are disabled by the ValueTube Extension.";
 
     for (let index = 0; index < ytdMessageRenderer.childNodes.length; index++) {
         if (ytdMessageRenderer.childNodes[index].id === "message") {
@@ -376,36 +384,132 @@ function CreateJForm() {
     return JForm;
 }
 
+// ------------------ CHANNEL PAGE FUNCTIONS -------------------------
+
+//HOME
+function FilterChannelHomePage() {
+    let sections = GetSection().querySelectorAll("ytd-item-section-renderer");
+    let videoIDs = [];
+    let videoObjects = [];
+    sections.forEach(element => {
+        for (let i = 0; i < element.children.length; i++) {
+            if (element.children[i].id == "contents") {
+                let sectionContents = element.children[i];
+                let results;
+                switch (sectionContents.children[0].tagName) {
+                    case "YTD-CHANNEL-VIDEO-PLAYER-RENDERER":
+                        results = GetFeaturedVideoID(sectionContents.children[0]);
+                        videoIDs.push(results.vID)
+                        videoObjects.push(results.element);
+                        break;
+                    case "YTD-SHELF-RENDERER":
+                        results = ChannelSearchShelf(sectionContents.children[0]);
+                        videoIDs = videoIDs.concat(results.videoIDs);
+                        videoObjects = videoObjects.concat(results.videoObjects);
+                        break;
+                    default:
+                        console.error("Error: Unexpected Section TagName Found.");
+                        break;
+                }
+            }
+        } 
+    });
+    return {"videoIDs": videoIDs, "videoObjects": videoObjects};
+}
+
+/**
+ * 
+ * @param {HTMLElement} element 
+ */
+function GetFeaturedVideoID(element) {
+    for (let i = 0; i < element.children.length; i++) {
+        if (element.children[i].id == "content") {
+            let content = element.children[i];
+            let links = content.children[0].children[0].querySelectorAll("a");
+            for (const link of links) {
+                return {"vID" : getVideoID(new URL(link.href)), "element" : element};
+            }
+        }
+    }
+}
+
+/**
+ * 
+ * @param {HTMLElement} shelf 
+ */
+function ChannelSearchShelf(shelf) {
+    // TODO: Add check for if its a shelf of playlists
+    for (let i = 0; i < shelf.children.length; i++) {
+        if (shelf.children[i].id == "dismissable") {
+            let dismissable = shelf.children[i];
+            for (let x = 0; x < dismissable.children.length; x++) {
+                if (dismissable.children[x].id == "contents" && dismissable.children[x].children[0].tagName == "YT-HORIZONTAL-LIST-RENDERER") {
+                    let horizontalList = dismissable.children[x].children[0];
+                    return ChannelSearchHorizontalList(horizontalList);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 
+ * @param {HTMLElement} listElement 
+ */
+function ChannelSearchHorizontalList(listElement) {
+    let videoIDs = [];
+    let videoObjects = [];
+    for (let i = 0; i < listElement.children.length; i++) {
+        if (listElement.children[i].id == "scroll-container") {
+            let items = listElement.children[i].children[0];
+            // Iterate through items
+            for (let x = 0; x < items.children.length; x++) {
+                // TODO: Check if its a playlist or channel renderer
+                // Get links from grid element
+                let links = items.children[x].getElementsByTagName("a");
+                for (const link of links) {
+                    videoIDs.push(getVideoID(new URL(link.href)));
+                    videoObjects.push(items.children[x]);
+                    break;
+                }
+            }
+            return {videoIDs, videoObjects};
+        }
+    }
+}
+
+//VIDEOS
+function FilterChannelVideoPage() {
+    let primary = document.getElementsByTagName("ytd-two-column-browse-results-renderer");
+    let videoIDs = [];
+    let videoObjects = [];
+    for (let i = 0; i < primary.length; i++) {
+        let innerContents = primary[i].children["primary"].children[0].children["contents"].children[0].children["contents"].children[0]["children"]["items"]
+        for (let index = 0; index < innerContents.childElementCount; index++) {
+            let videoID = getVideoID(innerContents.children[index].getElementsByTagName("a")[0].href);
+            videoIDs.push(videoIDs);
+            videoObjects.push({"vID" : videoID, "element" : innerContents.children[index]});
+        }
+    }
+    return {"videoIDs": videoIDs, "videoObjects": videoObjects};
+}
+
+// ------------------ END CHANNEL PAGE FUNCTIONS ---------------------
+
 window.addEventListener("message", function(event) {
     if (event.source != window)
         return
 
     if (event.data) {
         switch (event.data) {
-            // TODO: Add user feedback to button
             case windowMessages.SendCurator:
                 let JForm = CreateJForm();
-                chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm}, function (response) {
-                    if (response.farewell == false) {
-                        console.error("An Error occured trying to add your curated filters.");
-                    } else if (response.farewell == true) {
-                        console.log("Success! Curated Filters added.");
-                    }
-                });
+                chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm});
                 break;
             case windowMessages.FilterHome:
+                // TODO: Need to send user filters
                 let homePageInfo = GetHomePageVideoIDs();
-                chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]}, function (response) {
-                    if (!response.farewell) {
-                        console.error("An Error occured trying to filter the home page");
-                    } else if (response.farewell) {
-                        console.log("Success! Home page filtered!");
-                        console.log("Extension Response: ");
-                        console.log(response.data);
-                        // TODO: Use APIResponse Data
-                        // RemoveVideoElements(homePageInfo[1], response.farewell.data);
-                    }
-                });
+                chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]});
                 break;
             case windowMessages.SearchPage:
                 let searchPageVideoIDs = GetSearchPageVideoIDs();
@@ -424,11 +528,8 @@ window.addEventListener("message", function(event) {
                 break;
               
             default:
-                console.error("Error: Unknown message");
+                console.error("An error occurred trying to communicate with the extension.");
                 break;
         }
     }
-       // TODO: Error Handling   
-     
-
 })
