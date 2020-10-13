@@ -1,6 +1,6 @@
 {
 	"name" : "ValueTube",
-	"version" : "0.2",
+	"version" : "0.5",
 	"description" : "This is the ValueTube Extension",
 	"permissions": ["tabs", "declarativeContent", "storage", "identity", "notifications", "contextMenus"],
 	"background" : {
@@ -10,7 +10,7 @@
 	"content_scripts": [
 		{
 			"matches": ["*://www.youtube.com/*"],
-			"js": ["js/modifyPage.js"]
+			"js": ["js/modifyYoutube.js"]
 		}
 	],
 	"browser_action" : {
