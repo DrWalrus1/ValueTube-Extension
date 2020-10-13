@@ -77,7 +77,7 @@ function OnPageChange() {
                     }
                 });
 
-                // Filter Recommendations
+                GetRecommendationFeedIDs();
             } else if ((window.location.href).includes(page.SEARCH)) {
                 window.postMessage(windowMessages.SearchPage, '*');
             } else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
@@ -249,41 +249,25 @@ function GetSection() {
 //  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
 
 function GetRecommendationFeedIDs() {
-    let related = document.getElementById("related");
-    let items = related.children[1].children[1];
-    /* TODO:
-        1. get in div with id "related" DONE
-        2. get in div with tagName "ytd-watch-next-secondary-results-renderer" DONE
-        3. get in div with id "items" DONE
-        4. 
-            a) tagName "ytd-compact-autoplay-renderer":
+    const recommendedSection = document.getElementsByTagName("ytd-watch-next-secondary-results-renderer")[0];
 
-            b) tagName "ytd-compact-video-renderer":
-    */
-    let videoIDs = [];
-
-	let videos = document.getElementsByTagName('ytd-compact-video-renderer');
-
-	for (index = 0; index < videos.length; index++){
-
-		let link = videos[index].getElementsByTagName("a")[0].getAttribute('href');
-
-		let videoID = getVideoId(new URL(link, "https://www.youtube.com"))
-
-		if(videoID == null){
-			continue;
-		}
-		
-		videoIDs.push({"vID": videoID, "value": false});
-	}
-
-
-	return videoIDs;
-    
+    let observer = new MutationObserver(mutations => {
+        for(let mutation of mutations) {
+             for(let addedNode of mutation.addedNodes) {
+                 if (addedNode.tagName === "YTD-COMPACT-VIDEO-RENDERER") {
+                                       
+                    let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
+                    let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+                    FilterRecommendationFeed({"vID": videoID, "videoObject": addedNode});
+                  }
+              }
+         }
+     });
+     observer.observe(recommendedSection, { childList: true, subtree: true });
 }
 
 function FilterRecommendationFeed(obj) {
-
+    console.log(obj);
 }
 
 //  ------------------ END RECOMMENDATION FEED FUNCTIONS ------------------
