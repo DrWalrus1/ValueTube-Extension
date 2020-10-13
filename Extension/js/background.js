@@ -1,22 +1,23 @@
 'use strict';
 
-var contextMenuItem = {
-  "id": "ValueTube",
-  "title": "Check video against filters",
-  "contexts": ["link"],
-  "targetUrlPatterns": ["*://www.youtube.com/*"]
-};
-
-chrome.contextMenus.create(contextMenuItem);
-
-chrome.contextMenus.onClicked.addListener(function(clickData) {
-  if (clickData.menuItemId == "ValueTube" && clickData.linkUrl) {
-    let vID = getVideoID(new URL(clickData.linkUrl));
-    sendFilterData([vID]);
-  }
-})
-
 chrome.runtime.onInstalled.addListener(function(details) {
+  
+  var contextMenuItem = {
+    "id": "ValueTube",
+    "title": "Check video against filters",
+    "contexts": ["link"],
+    "targetUrlPatterns": ["*://www.youtube.com/*"]
+  };
+  
+  chrome.contextMenus.create(contextMenuItem);
+  
+  chrome.contextMenus.onClicked.addListener(function(clickData) {
+    if (clickData.menuItemId == "ValueTube" && clickData.linkUrl) {
+      let vID = getVideoID(new URL(clickData.linkUrl));
+      sendFilterData([vID]);
+    }
+  });
+
   chrome.declarativeContent.onPageChanged.removeRules(undefined, function() {
     chrome.declarativeContent.onPageChanged.addRules([{
       conditions: [new chrome.declarativeContent.PageStateMatcher({
