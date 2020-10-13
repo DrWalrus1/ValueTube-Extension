@@ -30,7 +30,8 @@ const page = {
 };
 const windowMessages = {
     SendCurator : "SubmitVT",
-    FilterHome : "FilterHome"
+    FilterHome : "FilterHome",
+    SearchPage : "SearchPage"
 };
 
 let primaryInner = document.getElementById("primary-inner");
@@ -75,7 +76,10 @@ function OnPageChange() {
                         removeComments();
                     }
                 });
+
                 // Filter Recommendations
+            } else if ((window.location.href).includes(page.SEARCH)) {
+                window.postMessage(windowMessages.SearchPage, '*');
             } else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
                 if ( (window.location.href).includes("/videos")) {
                     // VIDEOS PAGE
@@ -339,21 +343,46 @@ function removeComments() {
      observer.observe(commentSection, { childList: true, subtree: true });
 }
 
-/** 
-* @param {url} url
-*/
-function returnVideo(url){
+function GetSearchPageVideoIDs() {
+    let videoIDs = [];
+    let videoObjects = [];
+    let searchDiv = document.getElementsByTagName("ytd-search")[0];
+    let section = searchDiv.getElementsByTagName("ytd-section-list-renderer")[0];
 
-    let contents = getVideoID();
-    let getVideoID = []; 
+    for (let i = 0; i < section.children.length; i++) {
+        if (section.children[i].id == "contents") {
+            let contents = section.children[i];
+            // Iterate through item section renderers... (collections of video renderers)
+            for (let x = 0; x < contents.getElementsByTagName("ytd-item-section-renderer").length; x++) {
+                let obj = SearchItemSectionRenderer(contents.getElementsByTagName("ytd-item-section-renderer")[x]);
+                videoIDs.concat(obj["videoIDs"]);
+                videoObjects.concat(obj["videoObjects"]);
+            }
+            break;
+        }
+    }
 
-    let href = document.getElementById('ytd-video-renderer'); 
-    videos.forEach(element => {
-        let link = element.getElementById("a")[0].getAttribute("href");
-        let getVideoID = getVideoID(new URL(link,"http://www.youtube.com"));
-        videos.push({getVideoID : false});
-        
-    });
+    return {videoIDs, videoObjects};
+}
+
+function SearchItemSectionRenderer(itemSection) {
+    let videoIDs = [];
+    let videoObjects = [];
+    let items;
+    for (let i = 0; i < itemSection.children.length; i++) {
+        if (itemSection.children[i].id == "contents") {
+            items = itemSection.children[i].children;
+            break;
+        }
+    }
+
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].tagName == "YTD-VIDEO-RENDERER") {
+            videoIDs.push(getVideoID(new URL(items[i].getElementsByTagName("a")[0].href)));
+            videoObjects.push(items[i])
+        }
+    }
+    return {videoIDs, videoObjects};
 
 
 }
@@ -528,6 +557,10 @@ window.addEventListener("message", function(event) {
                 // TODO: Need to send user filters
                 let homePageInfo = GetHomePageVideoIDs();
                 chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]});
+                break;
+            case windowMessages.SearchPage:
+                let searchPageVideoIDs = GetSearchPageVideoIDs()["videoIDs"];
+                chrome.runtime.sendMessage({greeting : windowMessages.SearchPage, data : searchPageVideoIDs});
                 break;
             default:
                 console.error("An error occurred trying to communicate with the extension.");
