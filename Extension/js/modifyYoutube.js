@@ -77,7 +77,7 @@ function OnPageChange() {
                     }
                 });
 
-                // Filter Recommendations
+                GetRecommendationFeedIDs();
             } else if ((window.location.href).includes(page.SEARCH)) {
                 window.postMessage(windowMessages.SearchPage, '*');
             } else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
@@ -246,28 +246,31 @@ function GetSection() {
     return document.getElementById("contents");
 }
 
-function ModifyRecommendationFeed() {
-    let videoIDs = [];
+//  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
 
-	let videos = document.getElementsByTagName('ytd-compact-video-renderer');
+function GetRecommendationFeedIDs() {
+    const recommendedSection = document.getElementsByTagName("ytd-watch-next-secondary-results-renderer")[0];
 
-	for(index = 0; index < videos.length; index++){
-
-		let link = videos[index].getElementsByTagName("a")[0].getAttribute('href');
-
-		let videoID = getVideoId(new URL(link, "https://www.youtube.com"))
-
-		if(videoID == null){
-			continue;
-		}
-		
-		videoIDs.push({"vID": videoID, "value": false});
-	}
-
-
-	return videoIDs;
-    
+    let observer = new MutationObserver(mutations => {
+        for(let mutation of mutations) {
+             for(let addedNode of mutation.addedNodes) {
+                 if (addedNode.tagName === "YTD-COMPACT-VIDEO-RENDERER") {
+                                       
+                    let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
+                    let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+                    FilterRecommendationFeed({"vID": videoID, "videoObject": addedNode});
+                  }
+              }
+         }
+     });
+     observer.observe(recommendedSection, { childList: true, subtree: true });
 }
+
+function FilterRecommendationFeed(obj) {
+    console.log(obj);
+}
+
+//  ------------------ END RECOMMENDATION FEED FUNCTIONS ------------------
 
 function addCommentMessage(commentSection) {
     let itemSection = document.createElement("ytd-item-section-renderer");
