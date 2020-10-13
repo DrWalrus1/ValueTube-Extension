@@ -78,6 +78,11 @@ function OnPageChange() {
                 });
 
                 GetRecommendationFeedIDs();
+
+                if ( (window.location.href).includes("&list=")) {
+                    GetPlaylistIDs();
+                }
+
             } else if ((window.location.href).includes(page.SEARCH)) {
                 window.postMessage(windowMessages.SearchPage, '*');
             } else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
@@ -87,6 +92,8 @@ function OnPageChange() {
                 } else {
                     console.log(FilterChannelHomePage());
                 }
+            } else if ( (window.location.href).includes(page.PLAYLIST)) {
+                GetPlaylistPageIDs();
             }
     }
 }
@@ -245,6 +252,51 @@ function removeCuratorDiv() {
 function GetSection() {
     return document.getElementById("contents");
 }
+
+//  ------------------ PLAYLIST PAGE FUNCTIONS ------------------
+
+function GetPlaylistPageIDs() {
+    const playlistVidSection = document.getElementsByTagName("ytd-playlist-video-list-renderer")[0];
+
+    const vidsList = playlistVidSection.getElementsByTagName("ytd-playlist-video-renderer");
+    
+    for (let elem of vidsList) {
+        let link = elem.getElementsByTagName("a")[0].getAttribute('href');
+        let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+        FilterPlaylistPage({"vID": videoID, "videoObject": elem});
+    };
+
+    let observer = new MutationObserver(mutations => {
+        for(let mutation of mutations) {
+             for(let addedNode of mutation.addedNodes) {
+                 if (addedNode.tagName === "YTD-PLAYLIST-VIDEO-RENDERER") {                   
+                    let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
+                    let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+                    FilterPlaylistPage({"vID": videoID, "videoObject": addedNode});
+                  }
+              }
+         }
+     });
+     observer.observe(playlistVidSection, { childList: true, subtree: true });
+}
+
+function GetPlaylistIDs() {
+    const playlistVidSection = document.getElementsByTagName("ytd-playlist-panel-renderer")[0];
+
+    const vidsList = playlistVidSection.getElementsByTagName("ytd-playlist-panel-video-renderer");
+
+    for (let elem of vidsList) {
+        let link = elem.getElementsByTagName("a")[0].getAttribute('href');
+        let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+        FilterPlaylistPage({"vID": videoID, "videoObject": elem});
+    };
+}
+
+function FilterPlaylistPage(obj) {
+    console.log(obj);
+}
+
+// ------------------ END PLAYLIST PAGE FUNCTION ------------------
 
 //  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
 
