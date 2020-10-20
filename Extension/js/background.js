@@ -2,12 +2,12 @@
 const API_PAGES = {
   curator : "https://api.valuetube.net/curator",
   filter : "https://api.valuetube.net/filter",
-  categories : "http://localhost:5001/mongo/categories" //TODO: Change to actual API url
+  categories : "http://localhost:5001/mongo/categories" //TODO: Change to actual API url to fix syntax error
 }
 
 chrome.runtime.onStartup.addListener(function() {
   updateCategories();
-})
+});
 
 chrome.runtime.onInstalled.addListener(function(details) {
   updateCategories();
@@ -15,7 +15,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
     "id": "ValueTube",
     "title": "Check video against filters",
     "contexts": ["link"],
-    "targetUrlPatterns": ["*://www.youtube.com/*"]
+    "targetUrlPatterns": ["*://www.youtube.com/watch*"]
   };
   
   chrome.contextMenus.create(contextMenuItem);
@@ -51,7 +51,13 @@ chrome.runtime.onMessage.addListener(
         sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
         break;
       case "SubmitVT":
-        sendCuratorData(request.data);
+        (async () => {
+          const response = await sendCuratorData(request.data);
+          console.log(response);
+          sendResponse({farewell : response});
+        })();
+        
+        return true;
         break;
       case "DisableComments":
         sendResponse({farewell: localStorage.getItem("VTDisableComments")});
@@ -61,14 +67,14 @@ chrome.runtime.onMessage.addListener(
         // sendResponse({farewell: true, data: request.data});
         break;
       case "GetCategories":
-          sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
+        sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
         break;
       default:
         sendResponse({farewell: "Unknown message received by extension."});
         break;
       
     }      
-      
+    return true; 
 });
 
 /**
@@ -84,24 +90,29 @@ function getVideoID(url) {
  * @param {Object} JForm 
  */
 function sendCuratorData(JForm) {
-  var submit = new XMLHttpRequest();
-  submit.open("POST", API_PAGES.curator, true);
-  submit.setRequestHeader("Content-Type", "application/json");
-  submit.send(JSON.stringify(JForm));
-  submit.onload = function() {
-    if (submit.status != 200) { // analyze HTTP status of the response
-      return false; // e.g. 404: Not Found
-    } else { // show the result
-      // TODO: Error Handling
-      return true; // response is the server
+  return new Promise((resolve, reject) => {
+    console.log("hello");
+    var submit = new XMLHttpRequest();
+    submit.open("POST", API_PAGES.curator, true);
+    submit.setRequestHeader("Content-Type", "application/json");
+    submit.send(JSON.stringify(JForm));
+    submit.onload = function() {
+      if (submit.status != 200) { // analyze HTTP status of the response
+          console.log("test");
+        return false; // e.g. 404: Not Found
+      } else { // show the result
+        // TODO: Error Handling
+        // return true; // response is the server
+      }
     }
-  }
-    
-  submit.onreadystatechange = function() {
-    if (submit.readyState === 4) {
-      createCuratorNotification(JSON.parse(submit.response));
+      
+    submit.onreadystatechange = function() {
+      if (submit.readyState === 4) {
+        createCuratorNotification(JSON.parse(submit.response));
+        resolve (JSON.parse(submit.response));
+      }
     }
-  }
+  });
 }
 
 /**
@@ -127,7 +138,6 @@ function sendFilterData(videoIDs) {
       console.log(submit.response);
     }
   }
-
 }
 
 function createNotification(data) {
@@ -203,7 +213,7 @@ function updateCategories() {
         }, function() {
           localStorage.setItem("categories", JSON.stringify(response.categories));
           console.log("Categories Updated.");
-        })
+        });
       }
     }
   }

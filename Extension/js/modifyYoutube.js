@@ -14,7 +14,7 @@ const page = {
     SUBSCRIPTIONS : "https://www.youtube.com/feed/subscriptions",
     SEARCH : "https://www.youtube.com/results",
     VIDEO : "https://www.youtube.com/watch",
-    CHANNEL : ["https://www.youtube.com/c", "https://www.youtube.com/user"], // FIXME: Multiple urls
+    CHANNEL : ["https://www.youtube.com/c", "https://www.youtube.com/user"],
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
 };
@@ -38,6 +38,10 @@ function getVideoID(url = new URL(window.location.href)) {
 }
 
 // FIXME
+/**
+ * Checks the url and determines what functions need to be
+ * called to properly collect the video IDs and video elements.
+ */
 function OnPageChange() {
     switch (window.location.href) {
         case (page.HOME):
@@ -100,7 +104,7 @@ function addCategories(categoryArray) {
 }
 
 /**
- * This behemoth of a function does one simple task, it creates the Curator Div when Curator Mode has been enabled.
+ * Creates the Curator Div when Curator Mode has been enabled.
  * NOTE: This is only for creating training data for the neural network.
  */
 function createCuratorDiv() {
@@ -565,6 +569,14 @@ function FilterChannelVideoPage() {
 // ------------------ END CHANNEL PAGE FUNCTIONS ---------------------
 
 window.addEventListener("message", function(event) {
+    HandleMessages(event);
+});
+
+/**
+ * 
+ * @param {MessageEvent<any>} event 
+ */
+async function HandleMessages(event) {
     if (event.source != window)
         return
 
@@ -572,16 +584,18 @@ window.addEventListener("message", function(event) {
         switch (event.data) {
             case windowMessages.SendCurator:
                 let JForm = CreateJForm();
-                chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm});
+                chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm}, function(response) {
+                    console.log(response);
+                });
                 break;
             case windowMessages.FilterHome:
                 // TODO: Need to send user filters
                 let homePageInfo = GetHomePageVideoIDs();
-                chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]});
+                await chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]});
                 break;
             case windowMessages.SearchPage:
                 let searchPageVideoIDs = GetSearchPageVideoIDs()["videoIDs"];
-                chrome.runtime.sendMessage({greeting : windowMessages.SearchPage, data : searchPageVideoIDs});
+                await chrome.runtime.sendMessage({greeting : windowMessages.SearchPage, data : searchPageVideoIDs});
                 break;
             default:
                 console.error("An error occurred trying to communicate with the extension.");
@@ -589,4 +603,4 @@ window.addEventListener("message", function(event) {
                 break;
         }
     }
-})
+}
