@@ -1,23 +1,13 @@
-const categoryArray = [
-    "Adult Content",
-    "Alcohol/Drugs",
-    "Comedy",
-    "Conspiracy",
-    "Education",
-    "Gambling",
-    "Gaming",
-    "Horror",
-    "LGBT",
-    "Movies/TV",
-    "Music",
-    "News/Politics",
-    "Promotional",
-    "Religion",
-    "Romance",
-    "Sports",
-    "Violence",
-    "Vlog"
-];
+const windowMessages = {
+    SendCurator : "SubmitVT",
+    FilterHome : "FilterHome",
+    SearchPage : "SearchPage",
+    GetCategories : "GetCategories"
+};
+let categoryArray = [];
+chrome.runtime.sendMessage({greeting : "GetCategories"}, function(response) {
+    categoryArray = response.farewell;
+});
 const page = {
     HOME : "https://www.youtube.com/",
     TRENDING : "https://www.youtube.com/feed/trending",
@@ -27,11 +17,6 @@ const page = {
     CHANNEL : ["https://www.youtube.com/c", "https://www.youtube.com/user"], // FIXME: Multiple urls
     PLAYLIST : "https://www.youtube.com/playlist",
     MIX : "https://www.youtube.com/watch?v=&list="
-};
-const windowMessages = {
-    SendCurator : "SubmitVT",
-    FilterHome : "FilterHome",
-    SearchPage : "SearchPage"
 };
 
 let primaryInner = document.getElementById("primary-inner");
@@ -600,6 +585,7 @@ window.addEventListener("message", function(event) {
                 break;
             default:
                 console.error("An error occurred trying to communicate with the extension.");
+                console.log(event);
                 break;
         }
     }
