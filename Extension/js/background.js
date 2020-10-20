@@ -138,7 +138,7 @@ function sendFilterData(videoIDs) {
     
     submit.onreadystatechange = function() {
       if (submit.readyState === 4) {
-        resolve(submit.response);
+        resolve(JSON.parse(submit.response));
       }
     }
   });

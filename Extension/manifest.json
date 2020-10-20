@@ -8,8 +8,7 @@
 		"storage",
 		"notifications",
 		"contextMenus",
-		"http://*.youtube.com/*",
-      	"https://*.youtube.com/*"
+		"*://www.youtube.com/*"
 	],
 	"background" : {
 		"scripts" : ["js/background.js"],

@@ -522,7 +522,6 @@ function GetFeaturedVideoID(element) {
  * @param {HTMLElement} shelf 
  */
 function ChannelSearchShelf(shelf) {
-    // TODO: Add check for if its a shelf of playlists
     for (let i = 0; i < shelf.children.length; i++) {
         if (shelf.children[i].id == "dismissable") {
             let dismissable = shelf.children[i];
