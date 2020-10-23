@@ -604,15 +604,20 @@ async function HandleMessages(event) {
             case windowMessages.FilterHome:
                 // TODO: Need to send user filters
                 let homePageInfo = GetHomePageVideoIDs();
-                await chrome.runtime.sendMessage({greeting : windowMessages.FilterHome, data : homePageInfo["videoIDs"]});
+                console.log(homePageInfo);
+                await chrome.runtime.sendMessage({greeting : "Filter", data : homePageInfo["videoIDs"]}, function (response) {
+                    console.log(response);
+                });
                 break;
             case windowMessages.SearchPage:
-                let searchPageVideoIDs = GetSearchPageVideoIDs()["videoIDs"];
-                await chrome.runtime.sendMessage({greeting : windowMessages.SearchPage, data : searchPageVideoIDs});
+                let searchPageVideoIDs = GetSearchPageVideoIDs();
+                await chrome.runtime.sendMessage({greeting : "Filter", data : searchPageVideoIDs["videoIDs"]}, function (response) {
+                    console.log(response);
+                });
                 break;
             default:
                 console.error("An error occurred trying to communicate with the extension.");
-                console.log(event);
+                // console.log(event);
                 break;
         }
     }

@@ -62,9 +62,13 @@ chrome.runtime.onMessage.addListener(
       case "DisableComments":
         sendResponse({farewell: localStorage.getItem("VTDisableComments")});
         break;
-      case "FilterPage":
-        sendFilterData(request.data);
-        // sendResponse({farewell: true, data: request.data});
+      case "Filter":
+        (async () => {
+          const response = await sendFilterData(request.data);
+          console.log(response);
+          sendResponse({farewell : response});
+        })();
+        return true;
         break;
       case "GetCategories":
         sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
@@ -118,24 +122,26 @@ function sendCuratorData(JForm) {
  * @param {Array<String>} videoIDs 
  */
 function sendFilterData(videoIDs) {
-  var submit = new XMLHttpRequest();
-  submit.open("POST", API_PAGES.filter, true);
-  submit.setRequestHeader("Content-Type", "application/json");
-  submit.send(JSON.stringify({videoIDs : videoIDs}));
-  submit.onload = function() {
-    if (submit.status != 200) { // analyze HTTP status of the response
-      return false; // e.g. 404: Not Found
-    } else { // show the result
-      // TODO: Error Handling
-      return true; // response is the server
+  return new Promise((resolve, reject)=> {
+    var submit = new XMLHttpRequest();
+    submit.open("POST", API_PAGES.filter, true);
+    submit.setRequestHeader("Content-Type", "application/json");
+    submit.send(JSON.stringify({videoIDs : videoIDs}));
+    submit.onload = function() {
+      if (submit.status != 200) { // analyze HTTP status of the response
+        return false; // e.g. 404: Not Found
+      } else { // show the result
+        // TODO: Error Handling
+        return true; // response is the server
+      }
     }
-  }
-  
-  submit.onreadystatechange = function() {
-    if (submit.readyState === 4) {
-      console.log(submit.response);
+    
+    submit.onreadystatechange = function() {
+      if (submit.readyState === 4) {
+        resolve(submit.response);
+      }
     }
-  }
+  });
 }
 
 function createNotification(data) {
