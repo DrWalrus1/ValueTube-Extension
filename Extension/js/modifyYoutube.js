@@ -66,10 +66,10 @@ function OnPageChange() {
                     }
                 });
 
-                GetRecommendationFeedIDs();
+                console.table(GetRecommendationFeedIDs()["videoObjects"]);
 
                 if ( (window.location.href).includes("&list=")) {
-                    GetPlaylistIDs();
+                    console.log(GetPlaylistIDs());
                 }
 
             } else if ((window.location.href).includes(page.SEARCH)) {
@@ -82,7 +82,7 @@ function OnPageChange() {
                     console.log(FilterChannelHomePage());
                 }
             } else if ( (window.location.href).includes(page.PLAYLIST)) {
-                GetPlaylistPageIDs();
+                console.log(GetPlaylistPageIDs());
             }
     }
 }
@@ -238,6 +238,13 @@ function removeCuratorDiv() {
 }
 // ------------------ END CURATOR FUNCTION ------------------
 
+class VideoObject {
+    constructor(videoID, element) {
+        this.videoID = videoID;
+        this.element = element;
+    }
+}
+
 function GetSection() {
     return document.getElementById("contents");
 }
@@ -245,6 +252,8 @@ function GetSection() {
 //  ------------------ PLAYLIST PAGE FUNCTIONS ------------------
 
 function GetPlaylistPageIDs() {
+    let videoIDs = [];
+    let videoObjects = [];
     const playlistVidSection = document.getElementsByTagName("ytd-playlist-video-list-renderer")[0];
 
     const vidsList = playlistVidSection.getElementsByTagName("ytd-playlist-video-renderer");
@@ -252,24 +261,29 @@ function GetPlaylistPageIDs() {
     for (let elem of vidsList) {
         let link = elem.getElementsByTagName("a")[0].getAttribute('href');
         let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-        FilterPlaylistPage({"vID": videoID, "videoObject": elem});
+        videoIDs.push(videoID);
+        videoObjects.push(new VideoObject(videoID,elem));
     };
 
     let observer = new MutationObserver(mutations => {
         for(let mutation of mutations) {
-             for(let addedNode of mutation.addedNodes) {
-                 if (addedNode.tagName === "YTD-PLAYLIST-VIDEO-RENDERER") {                   
+            for(let addedNode of mutation.addedNodes) {
+                if (addedNode.tagName === "YTD-PLAYLIST-VIDEO-RENDERER") {                   
                     let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
                     let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-                    FilterPlaylistPage({"vID": videoID, "videoObject": addedNode});
-                  }
-              }
-         }
+                    videoIDs.push(videoID);
+                    videoObjects.push(new VideoObject(videoID,addedNode));
+                }
+            }
+        }
      });
      observer.observe(playlistVidSection, { childList: true, subtree: true });
+     return {videoIDs, videoObjects};
 }
 
 function GetPlaylistIDs() {
+    let videoIDs = [];
+    let videoObjects = [];
     const playlistVidSection = document.getElementsByTagName("ytd-playlist-panel-renderer")[0];
 
     const vidsList = playlistVidSection.getElementsByTagName("ytd-playlist-panel-video-renderer");
@@ -277,12 +291,10 @@ function GetPlaylistIDs() {
     for (let elem of vidsList) {
         let link = elem.getElementsByTagName("a")[0].getAttribute('href');
         let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-        FilterPlaylistPage({"vID": videoID, "videoObject": elem});
+        videoIDs.push(videoID);
+        videoObjects.push(new VideoObject(videoID, elem));
     };
-}
-
-function FilterPlaylistPage(obj) {
-    console.log(obj);
+    return {videoIDs, videoObjects};
 }
 
 // ------------------ END PLAYLIST PAGE FUNCTION ------------------
@@ -290,8 +302,9 @@ function FilterPlaylistPage(obj) {
 //  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
 
 function GetRecommendationFeedIDs() {
+    let videoIDs = [];
+    let videoObjects = [];
     const recommendedSection = document.getElementsByTagName("ytd-watch-next-secondary-results-renderer")[0];
-
     let observer = new MutationObserver(mutations => {
         for(let mutation of mutations) {
              for(let addedNode of mutation.addedNodes) {
@@ -299,16 +312,15 @@ function GetRecommendationFeedIDs() {
                                        
                     let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
                     let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-                    FilterRecommendationFeed({"vID": videoID, "videoObject": addedNode});
+                    videoIDs.push(videoID);
+                    videoObjects.push(new VideoObject(videoID, addedNode));
+                    // FilterRecommendationFeed({"vID": videoID, "videoObject": addedNode});
                   }
               }
          }
      });
      observer.observe(recommendedSection, { childList: true, subtree: true });
-}
-
-function FilterRecommendationFeed(obj) {
-    console.log(obj);
+     return {videoIDs, videoObjects};
 }
 
 //  ------------------ END RECOMMENDATION FEED FUNCTIONS ------------------
@@ -380,13 +392,12 @@ function GetSearchPageVideoIDs() {
             // Iterate through item section renderers... (collections of video renderers)
             for (let x = 0; x < contents.getElementsByTagName("ytd-item-section-renderer").length; x++) {
                 let obj = SearchItemSectionRenderer(contents.getElementsByTagName("ytd-item-section-renderer")[x]);
-                videoIDs.concat(obj["videoIDs"]);
-                videoObjects.concat(obj["videoObjects"]);
+                videoIDs.push(...obj["videoIDs"]);
+                videoObjects.push(...obj["videoObjects"]);
             }
             break;
         }
     }
-
     return {videoIDs, videoObjects};
 }
 
@@ -403,8 +414,9 @@ function SearchItemSectionRenderer(itemSection) {
 
     for (let i = 0; i < items.length; i++) {
         if (items[i].tagName == "YTD-VIDEO-RENDERER") {
-            videoIDs.push(getVideoID(new URL(items[i].getElementsByTagName("a")[0].href)));
-            videoObjects.push(items[i])
+            let videoID = getVideoID(new URL(items[i].getElementsByTagName("a")[0].href));
+            videoIDs.push(videoID);
+            videoObjects.push(new VideoObject(videoID, items[i]));
         }
     }
     return {videoIDs, videoObjects};
@@ -430,7 +442,7 @@ function GetHomePageVideoIDs() {
             continue;
         }
         videoIDs.push(videoID);
-        videoObjects.push({"vID" : videoID, "element" : videos[index]});
+        videoObjects.push(new VideoObject(videoID,videos[index]));
     }
     return {videoIDs, videoObjects};
 }
@@ -472,7 +484,7 @@ function FilterChannelHomePage() {
                     case "YTD-CHANNEL-VIDEO-PLAYER-RENDERER":
                         results = GetFeaturedVideoID(sectionContents.children[0]);
                         videoIDs.push(results.vID)
-                        videoObjects.push(results.element);
+                        videoObjects.push(new VideoObject(results.vID, results.element));
                         break;
                     case "YTD-SHELF-RENDERER":
                         results = ChannelSearchShelf(sectionContents.children[0]);
@@ -540,8 +552,9 @@ function ChannelSearchHorizontalList(listElement) {
                 // Get links from grid element
                 let links = items.children[x].getElementsByTagName("a");
                 for (const link of links) {
-                    videoIDs.push(getVideoID(new URL(link.href)));
-                    videoObjects.push(items.children[x]);
+                    let videoID = getVideoID(new URL(link.href));
+                    videoIDs.push(videoID);
+                    videoObjects.push(new VideoObject(videoID, items.children[x]));
                     break;
                 }
             }
@@ -558,9 +571,9 @@ function FilterChannelVideoPage() {
     for (let i = 0; i < primary.length; i++) {
         let innerContents = primary[i].children["primary"].children[0].children["contents"].children[0].children["contents"].children[0]["children"]["items"]
         for (let index = 0; index < innerContents.childElementCount; index++) {
-            let videoID = getVideoID(innerContents.children[index].getElementsByTagName("a")[0].href);
-            videoIDs.push(videoIDs);
-            videoObjects.push({"vID" : videoID, "element" : innerContents.children[index]});
+            let videoID = getVideoID(new URL(innerContents.children[index].getElementsByTagName("a")[0].href, "https://www.youtube.com/"));
+            videoIDs.push(videoID);
+            videoObjects.push(new VideoObject(videoID, innerContents.children[index]));
         }
     }
     return {"videoIDs": videoIDs, "videoObjects": videoObjects};
