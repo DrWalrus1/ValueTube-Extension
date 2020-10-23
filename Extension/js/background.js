@@ -2,7 +2,7 @@
 const API_PAGES = {
   curator : "https://api.valuetube.net/curator",
   filter : "https://api.valuetube.net/filter",
-  categories : "http://localhost:5001/mongo/categories" //TODO: Change to actual API url to fix syntax error
+  categories : "https://api.valuetube.net/mongo/categories"
 }
 
 chrome.runtime.onStartup.addListener(function() {
@@ -91,14 +91,12 @@ function getVideoID(url) {
  */
 function sendCuratorData(JForm) {
   return new Promise((resolve, reject) => {
-    console.log("hello");
     var submit = new XMLHttpRequest();
     submit.open("POST", API_PAGES.curator, true);
     submit.setRequestHeader("Content-Type", "application/json");
     submit.send(JSON.stringify(JForm));
     submit.onload = function() {
       if (submit.status != 200) { // analyze HTTP status of the response
-          console.log("test");
         return false; // e.g. 404: Not Found
       } else { // show the result
         // TODO: Error Handling
