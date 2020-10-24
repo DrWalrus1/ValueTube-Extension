@@ -73,6 +73,15 @@ function createCategorySliders(sectionID, categories = JSON.parse(localStorage.g
   if (section.children.length > 0) {
     return;
   }
+  let column = document.createElement("div");
+  let column2 = document.createElement("div");
+  let column3 = document.createElement("div");
+  column.style = "display:table-column;margin-left: 5px;";
+  column2.style = "display:table-column;";
+  column3.style = "display:table-column;";
+  section.appendChild(column);
+  section.appendChild(column2);
+  section.appendChild(column3);
   for (const e of categories) {
     let newDiv = createCategorySlider(e);
     section.appendChild(newDiv);
@@ -109,16 +118,21 @@ function createCategorySlider(category) {
   span.id = id+"Span";
   span.className = "d-table-cell font-weight-bold text-primary ml-2 mt-1 valueSpan";
   span.innerHTML = slider.value;
+
   let label = document.createElement("label");
-  label.className = "d-table-cell";
+  label.className = "d-block text-right";
   label.setAttribute("for", id+"Slider");
   label.innerHTML = category + ":";
+
+  let cellDiv = document.createElement("div");
+  cellDiv.className = "d-table-cell pl-1";
+  cellDiv.appendChild(label);
   
   let div = document.createElement("div");
-  div.className = "d-table justify-content-left my-3";
+  div.className = "d-table-row justify-content-left my-3";
   div.style = "margin-top: 5px;";
   
-  div.appendChild(label);
+  div.appendChild(cellDiv);
   div.appendChild(slider);
   div.appendChild(span);
   return div;
