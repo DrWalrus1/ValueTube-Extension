@@ -1,10 +1,9 @@
 {
 	"name" : "ValueTube",
-	"version" : "0.5",
+	"version" : "0.7",
 	"description" : "This is the ValueTube Extension",
 	"permissions": [
 		"tabs",
-		"declarativeContent",
 		"storage",
 		"notifications",
 		"contextMenus",
