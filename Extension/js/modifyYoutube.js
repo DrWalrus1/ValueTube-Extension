@@ -15,8 +15,8 @@ const page = {
     SEARCH : "https://www.youtube.com/results",
     VIDEO : "https://www.youtube.com/watch",
     CHANNEL : ["https://www.youtube.com/c", "https://www.youtube.com/user"],
-    PLAYLIST : "https://www.youtube.com/playlist",
-    MIX : "https://www.youtube.com/watch?v=&list="
+    PLAYLIST_PAGE : "https://www.youtube.com/playlist",
+    PLAYLIST : "&list="
 };
 
 let primaryInner = document.getElementById("primary-inner");
@@ -68,7 +68,7 @@ function OnPageChange() {
 
                 console.table(GetRecommendationFeedIDs()["videoObjects"]);
 
-                if ( (window.location.href).includes("&list=")) {
+                if ( (window.location.href).includes(page.PLAYLIST)) {
                     console.log(GetPlaylistIDs());
                 }
 
@@ -81,8 +81,10 @@ function OnPageChange() {
                 } else {
                     console.log(FilterChannelHomePage());
                 }
-            } else if ( (window.location.href).includes(page.PLAYLIST)) {
+            } else if ( (window.location.href).includes(page.PLAYLIST_PAGE)) {
                 console.log(GetPlaylistPageIDs());
+            } else if ( (window.location.href).includes(page.SUBSCRIPTIONS)) {
+                console.log(GetSubscriptionIDs());
             }
     }
 }
@@ -298,6 +300,50 @@ function GetPlaylistIDs() {
 }
 
 // ------------------ END PLAYLIST PAGE FUNCTION ------------------
+
+//  ------------------ SUBSCRIPTIONS FUNCTIONS ------------------
+
+function GetSubscriptionIDs() {
+    let videoIDs = [];
+    let videoObjects = [];
+    const SubscriptionSection = document.getElementsByTagName("ytd-section-list-renderer")[0];
+    
+    //list view
+    let section = SubscriptionSection.getElementsByTagName("ytd-video-renderer");
+    for (let elem of section) {
+        let link = elem.getElementsByTagName("a")[0].getAttribute('href');
+        let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+        videoIDs.push(videoID);
+        videoObjects.push(new VideoObject(videoID,elem));
+    };
+
+    //grid view
+    section = SubscriptionSection.getElementsByTagName("ytd-grid-video-renderer");
+    
+    for (let elem of section) {
+        let link = elem.getElementsByTagName("a")[0].getAttribute('href');
+        let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+        videoIDs.push(videoID);
+        videoObjects.push(new VideoObject(videoID,elem));
+    };
+
+    let observer = new MutationObserver(mutations => {
+        for(let mutation of mutations) {
+             for(let addedNode of mutation.addedNodes) {
+                 if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER" || addedNode.tagName === "YTD-VIDEO-RENDERER") {                   
+                    let link = addedNode.getElementsByTagName("a")[0];
+                    let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+                    videoIDs.push(videoID);
+                    videoObjects.push(new VideoObject(videoID,addedNode));
+                  }
+              }
+         }
+     });
+     observer.observe(SubscriptionSection, { childList: true, subtree: true });
+     return {videoIDs, videoObjects};
+}
+
+// ------------------ END SUBSCRIPTIONS PAGE FUNCTION ------------------
 
 //  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
 
