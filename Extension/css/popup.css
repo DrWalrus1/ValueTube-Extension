@@ -26,3 +26,10 @@ a, a:link, a:visited, a:hover, a:active {
 .space-between { 
     justify-content: space-between; 
 }  
+
+.rangeSlider {
+    vertical-align: middle;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 3px;
+}

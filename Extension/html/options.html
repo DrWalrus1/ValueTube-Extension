@@ -13,7 +13,19 @@
         <div style="visibility: hidden;"><button class="caretButton"><i class="fa fa-caret-right"></i></button></div>
       </div>
       <hr>
-      <div>
+      <div id="options">
+        <label for="ToggleAdvancedFilter">Enable Advanced Filter: </label>
+        <label style="display: inline-block;" id="AdvancToggleAdvancedFilteredFilter" class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="ToggleAdvancedFilterInput">
+          <label class="custom-control-label" for="ToggleAdvancedFilterInput"></label> 
+        </label>
+        <div id="advancedFilter" style="display:none;">
+          <hr>
+          <div id="filterSection" style="border: 1px solid grey;height: 200px;overflow-y: scroll;">
+          </div>
+          <hr>
+        </div>
+
         <label for="blockComments">Disable the comment section: </label>
         <label style="display: inline-block;" id="blockComments" class="custom-control custom-switch">
           <input type="checkbox" class="custom-control-input" id="blockCommentsInput">
@@ -36,6 +48,7 @@
         </div>
       </div>
     </body>
+    <script src="../js/jquery-3.5.1.slim.min.js"></script>
     <script src="../js/storage.js"></script>
     <script src="../js/options.js"></script>
   </html>
