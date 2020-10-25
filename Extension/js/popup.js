@@ -98,3 +98,34 @@ function SetCuratorDiv(state, tabID) {
 // chrome.storage.local.onChange.addListener(function(changes, storageName){
 //     chrome.browserAction.setBadgeText({"text": "1"});
 // })
+
+
+function activeToAvailable () {
+    var active = document.getElementsByClassName('active');
+    var available = document.getElementsByClassName('available');
+    var activeSelect = document.getElementById('act')
+    var availableSelect = document.getElementById('ava')
+    var option = document.getElementsByTagName('option');
+
+        for (x of option) {
+            if (x.selected == true && !activeSelect.contains(x)){
+                activeSelect.appendChild(x);}
+        }; 
+    }
+
+
+    
+function availableToActive () {
+
+    var active = document.getElementsByClassName('active');
+    var available = document.getElementsByClassName('available');
+    var activeSelect = document.getElementById('act')
+    var availableSelect = document.getElementById('ava')
+    var option = document.getElementsByTagName('option');
+
+    for (x of option) {
+        if (x.selected == true && !availableSelect.contains(x)){
+            availableSelect.appendChild(x);}
+    }; 
+
+}

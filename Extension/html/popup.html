@@ -34,10 +34,33 @@
         </thead>
         <tbody>
           <td>
-            <textarea readonly id ="activeDisplay" cols='15' rows ='4' style="resize: none;"></textarea>
+            <div class="form-group">
+              <select multiple class="form-control" id="act" onclick="availableToActive ()">
+              </select>
+            </div>
           </td>
           <td>
-            <textarea readonly id= "AvailableDisplay" cols='15' rows="4" style="resize: none;"></textarea>
+            <div class="form-group">
+              <select multiple class="form-control" id="ava" onclick="activeToAvailable ()">
+                <option class='available' value="adultContent">Adult Content</option>
+                <option class='available' value="drugs">Alcohol/Drugs</option>
+                <option class='available'value="Comedy">Comedy</option>
+                <option class='available'  value="conspiracy">Conspiracy</option>
+                <option class='available' value="education">Education</option>
+                <option class='available'  value="gambling">Gambling</option>
+                <option class='available'  value="gaming">Gaming</option>
+                <option class='available'  value="horror">Horror</option>
+                <option class='available'  value="lgbt">LGBT</option>
+                <option class='available'  value="movies">Movies/TV</option>
+                <option class='available' value="music">Music</option>
+                <option class='available'  value="promo">Promotional</option>
+                <option class='available'  value="religion">Religion</option>
+                <option class='available'  value="romance">Romance</option>
+                <option class='available'  value="sports">Sports</option>
+                <option class='available'  value="violence">Violence</option>
+                <option class='available'  value="vlog">Vlog</option>  
+              </select>
+            </div>
           </td>
         </tbody>
       </table>  
