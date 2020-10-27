@@ -1,6 +1,7 @@
 const windowMessages = {
 	SendCurator : "SubmitVT",
 	FilterHome : "FilterHome",
+	FilterSubscriptions: "FilterSubscriptions",
 	SearchPage : "SearchPage",
 	GetCategories : "GetCategories"
 };
@@ -47,11 +48,12 @@ function OnPageChange() {
 		case (page.HOME):
 			window.postMessage(windowMessages.FilterHome, '*');
 			break;
+		case (page.SUBSCRIPTIONS):
+			//window.postMessage(windowMessages.FilterSubscriptions, '*');
+			GetSubscriptionIDs();
+			break;
 		// case (page.TRENDING):
 			// FilterTrendingPage();
-			// break;
-		// case (page.SUBSCRIPTIONS):
-			// FilterSubscriptionsPage();
 			// break;
 		default:
 			if ( (window.location.href).includes(page.VIDEO)) {
@@ -83,8 +85,6 @@ function OnPageChange() {
 				}
 			} else if ( (window.location.href).includes(page.PLAYLIST_PAGE)) {
 				console.log(GetPlaylistPageIDs());
-			} else if ( (window.location.href).includes(page.SUBSCRIPTIONS)) {
-				console.log(GetSubscriptionIDs());
 			}
 	}
 }
@@ -327,10 +327,14 @@ function GetSubscriptionIDs() {
 		videoObjects.push(new VideoObject(videoID,elem));
 	};
 
-	let observer = new MutationObserver(mutations => {
+	let loadingIDs = true;
+	let pause = false;
+	const observer = new MutationObserver(mutations => {
 		for(let mutation of mutations) {
 			 for(let addedNode of mutation.addedNodes) {
-				 if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER" || addedNode.tagName === "YTD-VIDEO-RENDERER") {                   
+				 if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER" || addedNode.tagName === "YTD-VIDEO-RENDERER") {            
+					loadingIDs = true;
+					pause = false;       
 					let link = addedNode.getElementsByTagName("a")[0];
 					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
 					videoIDs.push(videoID);
@@ -340,6 +344,21 @@ function GetSubscriptionIDs() {
 		 }
 	 });
 	 observer.observe(SubscriptionSection, { childList: true, subtree: true });
+
+	 let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+		} else if (pause) {
+		} else {
+			pause = true;
+			console.log("Finished loading IDs.")
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length-1)}}));
+		}
+		setTimeout(mutationsCallback, 300);
+	 }
+	 mutationsCallback();
+
 	 return {videoIDs, videoObjects};
 }
 
@@ -661,9 +680,47 @@ async function HandleMessages(event) {
 				});
 				break;
 			default:
-				console.error("An error occurred trying to communicate with the extension.");
-				// console.log(event);
+				if (event.data.videoObjects != null) {
+					let videoObjects = event.data.videoObjects;
+					let pageVideoIDs = [];
+					videoObjects.forEach(vid => {
+						pageVideoIDs.push(vid["videoID"]);
+					});
+
+					await chrome.runtime.sendMessage({greeting : "Filter", data : pageVideoIDs}, function (response) {
+						let results = response["farewell"]["result"];
+						let merged = [];
+
+						for(key in results) {
+							let obj = results[key];
+							obj["element"] = videoObjects.find((elem) => elem.videoID == key)["element"];
+							merged.push(obj);
+						  }
+						  
+						FilterVideos(merged);
+					});
+				} else {
+					console.error("An error occurred trying to communicate with the extension.");
+					// console.log(event);
+				}
 				break;
 		}
 	}
+}
+
+function FilterVideos(videos) {
+	chrome.runtime.sendMessage({greeting : "GetAdvFilters"}, function(response) {
+		filterLimit = response.farewell;
+		console.log(filterLimit);
+		videos.forEach(vid => {
+			console.log(vid);
+			for (filter in filterLimit) {
+				let filterName = filter.replace(" ", "").replace("/", "");
+				
+				if (typeof vid["prediction"] /* remove this when adding access from Mongo */ !== "undefined" && (vid["prediction"][filterName] * 100) > filterLimit[filter]) {
+					vid["element"].remove();
+				}
+			}
+		});
+	});
 }

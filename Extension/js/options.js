@@ -101,6 +101,8 @@ function createCategorySlider(category) {
   slider.type = "range";
   slider.min = "0";
   slider.max = "100";
+  let storedVal = JSON.parse(localStorage.getItem("AdvancedFilterVals"))[category];
+  slider.defaultValue = (storedVal == null)?"100":storedVal;
   slider.onclick = function () {
     const $valueSpan = $('#' + id + 'Span');
     const $value = $('#' + id + "Slider");
@@ -108,6 +110,10 @@ function createCategorySlider(category) {
     $value.on('input change', () => {
 
       $valueSpan.html($value.val());
+      let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
+      console.log(advFilterVals);
+      advFilterVals[category] = $value.val();
+      localStorage.setItem("AdvancedFilterVals", JSON.stringify(advFilterVals));
     });
     document.getElementById(id+"Span").innerHTML = this.value;
   }
