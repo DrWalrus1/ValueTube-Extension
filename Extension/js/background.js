@@ -9,6 +9,25 @@ chrome.runtime.onStartup.addListener(function() {
   updateCategories();
 });
 
+class Log {
+	
+	/**
+	 * 
+	 * @param {String} type 
+	 * @param {Number} code 
+	 * @param {String} message 
+	 */
+	constructor(type = 'INFO', code = 200, message = "Message not set.") {
+		this.type = type;
+		this.code = code;
+		this.message = message;
+	}
+
+	PrintLog() {
+		console.log(`[${this.type}]: ${this.message} (${this.code})`);
+    }
+}
+
 chrome.runtime.onInstalled.addListener(function(details) {
   updateCategories();
   var contextMenuItem = {
@@ -38,38 +57,41 @@ chrome.runtime.onInstalled.addListener(function(details) {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	switch (request.greeting) {
-	  case "IsCurator":
-		sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
-		break;
-	  case "SubmitVT":
-		(async () => {
-		  const response = await sendCuratorData(request.data);
-		  console.log(response);
-		  sendResponse({farewell : response});
-		})();
+		case "Log":
+			new Log(request.data.type, request.data.code, request.data.message).PrintLog();
+			break;
+		case "IsCurator":
+			sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
+			break;
+		case "SubmitVT":
+			(async () => {
+			const response = await sendCuratorData(request.data);
+			console.log(response);
+			sendResponse({farewell : response});
+			})();
+			
+			return true;
+			break;
+		case "DisableComments":
+			sendResponse({farewell: localStorage.getItem("VTDisableComments")});
+			break;
+		case "Filter":
+			(async () => {
+			const response = await sendFilterData(request.data);
+			console.log(response);
+			sendResponse({farewell : response});
+			})();
+			return true;
+			break;
+		case "GetCategories":
+			sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
+			break;
+		default:
+			sendResponse({farewell: "Unknown message received by extension."});
+			break;
 		
-		return true;
-		break;
-	  case "DisableComments":
-		sendResponse({farewell: localStorage.getItem("VTDisableComments")});
-		break;
-	  case "Filter":
-		(async () => {
-		  const response = await sendFilterData(request.data);
-		  console.log(response);
-		  sendResponse({farewell : response});
-		})();
-		return true;
-		break;
-	  case "GetCategories":
-		sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
-		break;
-	  default:
-		sendResponse({farewell: "Unknown message received by extension."});
-		break;
-	  
-	}      
-	return true; 
+		}      
+		return true; 
 });
 
 /**
