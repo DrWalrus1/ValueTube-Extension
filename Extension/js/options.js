@@ -68,7 +68,7 @@ developerNotifications.onchange = function() {
  * @param {String} sectionID
  * @param {Array<String>} categories 
  */
-function createCategorySliders(sectionID, categories = JSON.parse(localStorage.getItem("categories"))) {
+function createCategorySliders(sectionID, categories = getCategories()) {
   let section = document.getElementById(sectionID);
   if (section.children.length > 0) {
     return;

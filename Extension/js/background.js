@@ -113,7 +113,7 @@ function sendCuratorData(JForm) {
  * @param {Array<String>} videoIDs 
  */
 function sendFilterData(videoIDs) {
-  return new Promise((resolve, reject)=> {
+  return new Promise((resolve, reject) => {
 	var submit = new XMLHttpRequest();
 	submit.open("POST", API_PAGES.filter, true);
 	submit.setRequestHeader("Content-Type", "application/json");
