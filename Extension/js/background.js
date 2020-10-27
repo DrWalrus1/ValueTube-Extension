@@ -38,9 +38,12 @@ chrome.runtime.onInstalled.addListener(function(details) {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	switch (request.greeting) {
-	  case "IsCurator":
-		sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
+		case "AreFiltersEnabled":
+			sendResponse({farewell: localStorage.getItem("AreFiltersEnabled") == "true"})
 		break;
+	  case "IsCurator":
+			sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
+			break;
 	  case "SubmitVT":
 		(async () => {
 		  const response = await sendCuratorData(request.data);

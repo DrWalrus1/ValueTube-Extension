@@ -6,6 +6,10 @@ const windowMessages = {
 	GetCategories : "GetCategories"
 };
 let categoryArray = [];
+let isEnabled;
+chrome.runtime.sendMessage({greeting : "AreFiltersEnabled"}, function (response) {
+    isEnabled = response.farewell;
+})
 chrome.runtime.sendMessage({greeting : "GetCategories"}, function(response) {
 	categoryArray = response.farewell;
 });

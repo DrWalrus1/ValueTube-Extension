@@ -9,26 +9,26 @@
     <meta name="google-signin-client_id" content="678353975875-shl86pdiisrgg91dmck4pe4h1l8vdiul.apps.googleusercontent.com.apps.googleusercontent.com">
     <!-- <script src="https://apis.google.com/js/platform.js" async defer></script> FIXME: Throws an error to popup console. -->
   </head>
-  <body>
-
-    
+  <body> 
     <img src="../images/ValueTube Icon Full.png" width="60%" style="padding-left: 38%; padding-top: 0.5cm;">
     
     <hr>
-        <dt> Mode :
-          <button class="caretButton"> <i class="fa fa-caret-right"></i></button>
-        </dt>
-        <hr>
-        <dt> Filters :</dt>
-      <table class="table table-borderless text-center">
+        
+    <dt> Filters :
+        <div style ="display: inline-block;" class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="FilterSwitch">
+            <label class="custom-control-label" for="FilterSwitch"></label>
+        </div>
+    </dt>
+    <table class="table table-borderless text-center">
         <thead> 
-          <tr>
-            <th scope="col">Active</th>
-            <th scope="col">Available</th>
-          </tr>
+            <tr>
+                <th scope="col">Active</th>
+                <th scope="col">Available</th>
+            </tr>
         </thead>
         <tbody>
-          <td>
+            <td>
             <div class="form-group">
               <select multiple class="form-control" id="act" onclick="availableToActive ()">
               </select>
@@ -65,7 +65,7 @@
         <div style ="display: inline-block;" class="custom-control custom-switch">
           <input type="checkbox" class="custom-control-input" id="bListSwitch">
           <label class="custom-control-label" for="bListSwitch"></label>
-      </div>     
+        </div>     
       <button class="caretButton"><i class="fa fa-caret-right"></i></button>
       </dt>
       </a> 
