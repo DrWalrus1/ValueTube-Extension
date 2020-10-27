@@ -349,13 +349,16 @@ function GetSubscriptionIDs() {
 		if (loadingIDs) {
 			loadingIDs = false;
 			pause = false;
+			setTimeout(mutationsCallback, 250);
 		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
 		} else {
 			pause = true;
 			console.log("Finished loading IDs.")
 			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length-1)}}));
+			setTimeout(mutationsCallback, 1000);
 		}
-		setTimeout(mutationsCallback, 300);
+		
 	 }
 	 mutationsCallback();
 
