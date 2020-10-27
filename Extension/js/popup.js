@@ -74,7 +74,7 @@ function SetIsEnabled(state, tabID) {
 		chrome.tabs.executeScript(
 			tabID,
 			{
-				code : "isEnabled = true;"
+				code : "isEnabled = true;localStorage.setItem('AreFiltersEnabled', 'true');"
 			}
 			
 		);
@@ -82,7 +82,7 @@ function SetIsEnabled(state, tabID) {
 		chrome.tabs.executeScript(
 			tabID,
 			{
-				code : "isEnabled = false;"
+				code : "isEnabled = false;localStorage.setItem('AreFiltersEnabled', 'false');"
 			}
 			
 		);

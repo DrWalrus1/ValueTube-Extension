@@ -9,6 +9,7 @@ let categoryArray = [];
 let isEnabled;
 chrome.runtime.sendMessage({greeting : "AreFiltersEnabled"}, function (response) {
     isEnabled = response.farewell;
+    console.log(`Filter Enable: ${isEnabled}`);
 })
 chrome.runtime.sendMessage({greeting : "GetCategories"}, function(response) {
 	categoryArray = response.farewell;
@@ -667,26 +668,34 @@ async function HandleMessages(event) {
 	if (event.data) {
 		switch (event.data) {
 			case windowMessages.SendCurator:
-				let JForm = CreateJForm();
+                let JForm = CreateJForm();
 				chrome.runtime.sendMessage({greeting : windowMessages.SendCurator, data : JForm}, function(response) {
 					console.log(response);
 				});
 				break;
 			case windowMessages.FilterHome:
-				// TODO: Need to send user filters
+                // TODO: Need to send user filters
+                if (!isEnabled) {
+                    return;
+                }
 				let homePageInfo = GetHomePageVideoIDs();
-				console.log(homePageInfo);
-				await chrome.runtime.sendMessage({greeting : "Filter", data : homePageInfo["videoIDs"]}, function (response) {
-					console.log(response);
-				});
+				chrome.runtime.sendMessage({ greeting: "Filter", data: homePageInfo["videoIDs"] }, function (response) {
+                    console.log(response);
+                });
 				break;
 			case windowMessages.SearchPage:
+                if (!isEnabled) {
+                    return;
+                }
 				let searchPageVideoIDs = GetSearchPageVideoIDs();
-				await chrome.runtime.sendMessage({greeting : "Filter", data : searchPageVideoIDs["videoIDs"]}, function (response) {
-					console.log(response);
-				});
+				chrome.runtime.sendMessage({ greeting: "Filter", data: searchPageVideoIDs["videoIDs"] }, function (response) {
+                    console.log(response);
+                });
 				break;
 			default:
+                if (!isEnabled) {
+                    return;
+                }
 				if (event.data.videoObjects != null) {
 					let videoObjects = event.data.videoObjects;
 					let pageVideoIDs = [];
@@ -694,18 +703,18 @@ async function HandleMessages(event) {
 						pageVideoIDs.push(vid["videoID"]);
 					});
 
-					await chrome.runtime.sendMessage({greeting : "Filter", data : pageVideoIDs}, function (response) {
-						let results = response["farewell"]["result"];
-						let merged = [];
+					chrome.runtime.sendMessage({ greeting: "Filter", data: pageVideoIDs }, function (response) {
+                        let results = response["farewell"]["result"];
+                        let merged = [];
 
-						for(key in results) {
-							let obj = results[key];
-							obj["element"] = videoObjects.find((elem) => elem.videoID == key)["element"];
-							merged.push(obj);
-						  }
-						  
-						FilterVideos(merged);
-					});
+                        for (key in results) {
+                            let obj = results[key];
+                            obj["element"] = videoObjects.find((elem) => elem.videoID == key)["element"];
+                            merged.push(obj);
+                        }
+
+                        FilterVideos(merged);
+                    });
 				} else {
 					console.error("An error occurred trying to communicate with the extension.");
 					// console.log(event);

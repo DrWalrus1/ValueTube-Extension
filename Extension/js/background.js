@@ -42,8 +42,8 @@ chrome.runtime.onMessage.addListener(
 			sendResponse({farewell: localStorage.getItem("AreFiltersEnabled") == "true"})
 		break;
 	  case "IsCurator":
-			sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
-			break;
+		sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
+		break;
 	  case "SubmitVT":
 		(async () => {
 		  const response = await sendCuratorData(request.data);
