@@ -53,10 +53,6 @@ function OnPageChange() {
 		case (page.HOME):
 			window.postMessage(windowMessages.FilterHome, '*');
 			break;
-		case (page.SUBSCRIPTIONS):
-			//window.postMessage(windowMessages.FilterSubscriptions, '*');
-			GetSubscriptionIDs();
-			break;
 		// case (page.TRENDING):
 			// FilterTrendingPage();
 			// break;
@@ -73,10 +69,10 @@ function OnPageChange() {
 					}
 				});
 
-				console.table(GetRecommendationFeedIDs()["videoObjects"]);
+				GetRecommendationFeedIDs();
 
 				if ( (window.location.href).includes(page.PLAYLIST)) {
-					console.log(GetPlaylistIDs());
+					GetPlaylistIDs();
 				}
 
 			} else if ((window.location.href).includes(page.SEARCH)) {
@@ -89,7 +85,9 @@ function OnPageChange() {
 					console.log(FilterChannelHomePage());
 				}
 			} else if ( (window.location.href).includes(page.PLAYLIST_PAGE)) {
-				console.log(GetPlaylistPageIDs());
+				GetPlaylistPageIDs();
+			} else if ( (window.location.href).includes(page.SUBSCRIPTIONS)) {
+				GetSubscriptionIDs();
 			}
 	}
 }
@@ -259,97 +257,36 @@ function GetSection() {
 //  ------------------ PLAYLIST PAGE FUNCTIONS ------------------
 
 function GetPlaylistPageIDs() {
-	let videoIDs = [];
 	let videoObjects = [];
 	const playlistVidSection = document.getElementsByTagName("ytd-playlist-video-list-renderer")[0];
-
 	const vidsList = playlistVidSection.getElementsByTagName("ytd-playlist-video-renderer");
 	
+	//adding the preloaded videos to the videoObjects array
 	for (let elem of vidsList) {
 		let link = elem.getElementsByTagName("a")[0].getAttribute('href');
 		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-		videoIDs.push(videoID);
 		videoObjects.push(new VideoObject(videoID,elem));
 	};
 
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
 	let observer = new MutationObserver(mutations => {
 		for(let mutation of mutations) {
 			for(let addedNode of mutation.addedNodes) {
-				if (addedNode.tagName === "YTD-PLAYLIST-VIDEO-RENDERER") {                   
+				if (addedNode.tagName === "YTD-PLAYLIST-VIDEO-RENDERER") {
+					loadingIDs = true;
+					pause = false;
 					let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
 					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-					videoIDs.push(videoID);
 					videoObjects.push(new VideoObject(videoID,addedNode));
 				}
 			}
 		}
 	 });
 	 observer.observe(playlistVidSection, { childList: true, subtree: true });
-	 return {videoIDs, videoObjects};
-}
 
-function GetPlaylistIDs() {
-	let videoIDs = [];
-	let videoObjects = [];
-	const playlistVidSection = document.getElementsByTagName("ytd-playlist-panel-renderer")[0];
-
-	const vidsList = playlistVidSection.getElementsByTagName("ytd-playlist-panel-video-renderer");
-
-	for (let elem of vidsList) {
-		let link = elem.getElementsByTagName("a")[0].getAttribute('href');
-		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-		videoIDs.push(videoID);
-		videoObjects.push(new VideoObject(videoID, elem));
-	};
-	return {videoIDs, videoObjects};
-}
-
-// ------------------ END PLAYLIST PAGE FUNCTION ------------------
-
-//  ------------------ SUBSCRIPTIONS FUNCTIONS ------------------
-
-function GetSubscriptionIDs() {
-	let videoIDs = [];
-	let videoObjects = [];
-	const SubscriptionSection = document.getElementsByTagName("ytd-section-list-renderer")[0];
-	
-	//list view
-	let section = SubscriptionSection.getElementsByTagName("ytd-video-renderer");
-	for (let elem of section) {
-		let link = elem.getElementsByTagName("a")[0].getAttribute('href');
-		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-		videoIDs.push(videoID);
-		videoObjects.push(new VideoObject(videoID,elem));
-	};
-
-	//grid view
-	section = SubscriptionSection.getElementsByTagName("ytd-grid-video-renderer");
-	
-	for (let elem of section) {
-		let link = elem.getElementsByTagName("a")[0].getAttribute('href');
-		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-		videoIDs.push(videoID);
-		videoObjects.push(new VideoObject(videoID,elem));
-	};
-
-	let loadingIDs = true;
-	let pause = false;
-	const observer = new MutationObserver(mutations => {
-		for(let mutation of mutations) {
-			 for(let addedNode of mutation.addedNodes) {
-				 if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER" || addedNode.tagName === "YTD-VIDEO-RENDERER") {            
-					loadingIDs = true;
-					pause = false;       
-					let link = addedNode.getElementsByTagName("a")[0];
-					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-					videoIDs.push(videoID);
-					videoObjects.push(new VideoObject(videoID,addedNode));
-				  }
-			  }
-		 }
-	 });
-	 observer.observe(SubscriptionSection, { childList: true, subtree: true });
-
+	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
 		if (loadingIDs) {
 			loadingIDs = false;
@@ -360,14 +297,126 @@ function GetSubscriptionIDs() {
 		} else {
 			pause = true;
 			console.log("Finished loading IDs.")
-			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length-1)}}));
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
 			setTimeout(mutationsCallback, 1000);
 		}
-		
 	 }
 	 mutationsCallback();
+}
 
-	 return {videoIDs, videoObjects};
+function GetPlaylistIDs() {
+	let videoObjects = [];
+	const playlistVidSection = document.getElementsByTagName("ytd-playlist-panel-renderer")[0];
+	const vidsList = playlistVidSection.getElementsByTagName("ytd-playlist-panel-video-renderer");
+
+	//adding videos in the playlist
+	for (let elem of vidsList) {
+		let link = elem.getElementsByTagName("a")[0].getAttribute('href');
+		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+		videoObjects.push(new VideoObject(videoID, elem));
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
+	let observer = new MutationObserver(mutations => {
+		for(let mutation of mutations) {
+			for(let addedNode of mutation.addedNodes) {
+				if (addedNode.tagName === "YTD-PLAYLIST-PANEL-VIDEO-RENDERER") {
+					loadingIDs = true;
+					pause = false;
+					let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID,addedNode));
+				}
+			}
+		}
+	 });
+	 observer.observe(playlistVidSection, { childList: true, subtree: true });
+
+	 //checking periodically to see if more videos are loading
+	 let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			console.log("Finished loading IDs.")
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+	 }
+	 mutationsCallback();
+}
+
+// ------------------ END PLAYLIST PAGE FUNCTION ------------------
+
+//  ------------------ SUBSCRIPTIONS FUNCTIONS ------------------
+
+function GetSubscriptionIDs() {
+	let videoObjects = [];
+	const SubscriptionSection = document.getElementsByTagName("ytd-section-list-renderer")[0];
+	const section = SubscriptionSection.getElementsByTagName("ytd-item-section-renderer");
+
+	//adding the preloaded videos to the videoObjects array
+	for (let elem of section) {
+		let videoRenderers = elem.getElementsByTagName("ytd-grid-video-renderer"); //loop for grid view
+		for (let videoRenderer of videoRenderers) {
+			let link = videoRenderer.getElementsByTagName("a")[0].getAttribute('href');
+			let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+			videoObjects.push(new VideoObject(videoID,videoRenderer));
+		}
+		videoRenderers = elem.getElementsByTagName("ytd-video-renderer"); //loop for list view
+		for (let videoRenderer of videoRenderers) {
+			let link = videoRenderer.getElementsByTagName("a")[0].getAttribute('href');
+			let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+			videoObjects.push(new VideoObject(videoID,elem));
+		}
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
+	const observer = new MutationObserver(mutations => {
+		for(let mutation of mutations) {
+			 for(let addedNode of mutation.addedNodes) {
+				 if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER") {            
+					loadingIDs = true;
+					pause = false;       
+					let link = addedNode.getElementsByTagName("a")[0];
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID,addedNode));
+				  } else if (addedNode.tagName === "YTD-VIDEO-RENDERER") {
+					loadingIDs = true;
+					pause = false;       
+					let link = addedNode.getElementsByTagName("a")[0];
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID,addedNode.closest("ytd-item-section-renderer")));
+				  }
+			  }
+		 }
+	 });
+	 observer.observe(SubscriptionSection, { childList: true, subtree: true });
+
+	//checking periodically to see if more videos are loading
+	 let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			console.log("Finished loading IDs.")
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+	 }
+	 mutationsCallback();
 }
 
 // ------------------ END SUBSCRIPTIONS PAGE FUNCTION ------------------
@@ -375,28 +424,64 @@ function GetSubscriptionIDs() {
 //  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
 
 function GetRecommendationFeedIDs() {
-	let videoIDs = [];
 	let videoObjects = [];
 	const recommendedSection = document.getElementsByTagName("ytd-watch-next-secondary-results-renderer")[0];
+	const vidsList = recommendedSection.getElementsByTagName("ytd-compact-video-renderer");
+	const autoplay = recommendedSection.getElementsByTagName("ytd-compact-autoplay-renderer")[0];
+	
+	//adding the autoplay video to the videoObjects array if it exists
+	if (typeof autoplay !== "undefined") {
+		let link = autoplay.getElementsByTagName("a")[0].getAttribute('href');
+		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+		videoObjects.push(new VideoObject(videoID,autoplay));
+	}
+
+	//adding preloaded videos the the videoObjects array
+	for (let elem of vidsList) {
+		let link = elem.getElementsByTagName("a")[0].getAttribute('href');
+		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+		videoObjects.push(new VideoObject(videoID,elem));
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
 	let observer = new MutationObserver(mutations => {
 		for(let mutation of mutations) {
 			 for(let addedNode of mutation.addedNodes) {
 				 if (addedNode.tagName === "YTD-COMPACT-VIDEO-RENDERER") {
-									   
+					loadingIDs = true;
+					pause = false;
 					let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
 					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-					videoIDs.push(videoID);
 					videoObjects.push(new VideoObject(videoID, addedNode));
-					// FilterRecommendationFeed({"vID": videoID, "videoObject": addedNode});
 				  }
 			  }
 		 }
 	 });
 	 observer.observe(recommendedSection, { childList: true, subtree: true });
-	 return {videoIDs, videoObjects};
+
+	 //checking periodically to see if more videos are loading
+	 let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			console.log("Finished loading IDs.")
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+	 }
+	 mutationsCallback();
 }
 
 //  ------------------ END RECOMMENDATION FEED FUNCTIONS ------------------
+
+//  ------------------ COMMENT SECTION REMOVAL FUNCTIONS ------------------
 
 function addCommentMessage(commentSection) {
 	let itemSection = document.createElement("ytd-item-section-renderer");
@@ -452,6 +537,8 @@ function removeComments() {
 	 });
 	 observer.observe(commentSection, { childList: true, subtree: true });
 }
+
+//  ------------------ END COMMENT SECTION REMOVAL FUNCTIONS ------------------
 
 function GetSearchPageVideoIDs() {
 	let videoIDs = [];
