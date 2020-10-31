@@ -2,6 +2,7 @@ let disableComments = document.getElementById("blockCommentsInput");
 let developerMode = document.getElementById("enableDeveloperMode");
 let developerNotifications = document.getElementById("enableDeveloperNotifications");
 let advancedFilter = document.getElementById("ToggleAdvancedFilterInput");
+let curatorInput = document.getElementById('curatorInput');
 
 if (localStorage.getItem("VTDisableComments") == "true") {
   disableComments.checked = true;
@@ -19,6 +20,10 @@ if (localStorage.getItem("DeveloperNotifications") == "true") {
 if (localStorage.getItem("advancedFilter") == "true") {
   advancedFilter.checked = true;
   document.getElementById("advancedFilter").style.display = "block";
+}
+
+if (localStorage.getItem("VTCuratorMode") == "true") {
+	curatorInput.checked = true;
 }
 
 advancedFilter.onchange = function() {
@@ -64,6 +69,64 @@ developerNotifications.onchange = function() {
   save_options();
 };
 
+curatorInput.onchange = function() {
+	if (curatorInput.checked == true) {
+		localStorage.setItem("VTCuratorMode", "true");
+		modifyYoutubeTabsInWindows();
+	} else {
+		localStorage.setItem("VTCuratorMode", "false");   
+	}
+	modifyYoutubeTabsInWindows();
+};
+
+/**
+ * Triggers the extension to search all tabs in
+ * all windows to create or remove the curator input
+ * div.
+ */
+function modifyYoutubeTabsInWindows() {
+	chrome.windows.getAll({"populate": true, "windowTypes" :["normal"]}, function(windowArray) {
+		// Iterate through windows
+		for (let i = 0; i < windowArray.length; i++) {
+			// Iterate through tabs in window
+			for (let x = 0; x < windowArray[i].tabs.length; x++) {
+				if (windowArray[i].tabs[x].url.includes("youtube.com")) {
+					if (localStorage.getItem("VTCuratorMode") == "true") {
+						SetCuratorDiv(true, windowArray[i].tabs[x].id);
+					} else {
+						SetCuratorDiv(false, windowArray[i].tabs[x].id);
+					}
+				}
+			}
+		}
+	})
+}
+
+/**
+ * 
+ * @param {Boolean} state 
+ * @param {Number} tabID
+ */
+function SetCuratorDiv(state, tabID) {
+	if (state) {
+		chrome.tabs.executeScript(
+			tabID,
+			{
+				code : "createCuratorDiv();"
+			}
+			
+		);
+	} else {
+		chrome.tabs.executeScript(
+			tabID,
+			{
+				code : "removeCuratorDiv();"
+			}
+			
+		);
+	}
+}
+
 /**
  * @param {String} sectionID
  * @param {Array<String>} categories 
@@ -101,6 +164,9 @@ function createCategorySlider(category) {
   slider.type = "range";
   slider.min = "0";
   slider.max = "100";
+  let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
+  let storedVal = advFilterVals[category];
+  slider.defaultValue = (storedVal == null)?"100":storedVal;
   slider.onclick = function () {
     const $valueSpan = $('#' + id + 'Span');
     const $value = $('#' + id + "Slider");
@@ -108,6 +174,10 @@ function createCategorySlider(category) {
     $value.on('input change', () => {
 
       $valueSpan.html($value.val());
+      
+      console.log(advFilterVals);
+      advFilterVals[category] = $value.val();
+      localStorage.setItem("AdvancedFilterVals", JSON.stringify(advFilterVals));
     });
     document.getElementById(id+"Span").innerHTML = this.value;
   }

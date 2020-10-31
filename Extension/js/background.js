@@ -57,41 +57,44 @@ chrome.runtime.onInstalled.addListener(function(details) {
 chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	switch (request.greeting) {
-		case "Log":
-			new Log(request.data.type, request.data.code, request.data.message).PrintLog();
-			break;
-		case "IsCurator":
-			sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
-			break;
-		case "SubmitVT":
-			(async () => {
-			const response = await sendCuratorData(request.data);
-			console.log(response);
-			sendResponse({farewell : response});
-			})();
-			
-			return true;
-			break;
-		case "DisableComments":
-			sendResponse({farewell: localStorage.getItem("VTDisableComments")});
-			break;
-		case "Filter":
-			(async () => {
-			const response = await sendFilterData(request.data);
-			console.log(response);
-			sendResponse({farewell : response});
-			})();
-			return true;
-			break;
-		case "GetCategories":
-			sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
-			break;
-		default:
-			sendResponse({farewell: "Unknown message received by extension."});
-			break;
+		case "AreFiltersEnabled":
+			sendResponse({farewell: localStorage.getItem("AreFiltersEnabled") == "true"})
+		break;
+	  case "IsCurator":
+		sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
+		break;
+	  case "SubmitVT":
+		(async () => {
+		  const response = await sendCuratorData(request.data);
+		  console.log(response);
+		  sendResponse({farewell : response});
+		})();
 		
-		}      
-		return true; 
+		return true;
+		break;
+	  case "DisableComments":
+		sendResponse({farewell: localStorage.getItem("VTDisableComments")});
+		break;
+	  case "Filter":
+		(async () => {
+		  const response = await sendFilterData(request.data);
+		  console.log(response);
+		  sendResponse({farewell : response});
+		})();
+		return true;
+		break;
+	  case "GetCategories":
+		sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
+		break;
+	  case "GetAdvFilters":
+		sendResponse({farewell: JSON.parse(localStorage.getItem("AdvancedFilterVals"))});
+		break;
+	  default:
+		sendResponse({farewell: "Unknown message received by extension."});
+		break;
+	  
+	}      
+	return true; 
 });
 
 /**
