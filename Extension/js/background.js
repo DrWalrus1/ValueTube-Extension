@@ -58,7 +58,22 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	switch (request.greeting) {
 		case "AreFiltersEnabled":
-			sendResponse({farewell: localStorage.getItem("AreFiltersEnabled") == "true"})
+			// TODO: Use sender tab id to execute script
+			if (localStorage.getItem("AreFiltersEnabled") == "true") {
+				chrome.tabs.executeScript(
+					sender.tab.id,
+					{
+						code : "isEnabled = true;"
+					}
+				)
+			} else {
+				chrome.tabs.executeScript(
+					sender.tab.id,
+					{
+						code : "isEnabled = false;"
+					}
+				)
+			}
 		break;
 	  case "IsCurator":
 		sendResponse({farewell: localStorage.getItem("VTCuratorMode")});

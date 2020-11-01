@@ -97,7 +97,13 @@ function SetIsEnabled(state, tabID) {
 
 
 async function addOptionsToSelect() {
-	const simpleFilter = await getSimpleFilter();
+	const simpleFilter = await getSimpleFilter().catch( (error) => {
+        if (error.message == "simpleFilter not found.") {
+            setSimpleFilter();
+        }
+    }).then(async function() {
+        return await getSimpleFilter()
+    });
 	let active = simpleFilter.active;
 	let available = simpleFilter.available;
 

@@ -54,9 +54,9 @@ function getCategories() {
 
 function setSimpleFilter(newConfig = {
 		active : [
-			"Adult Content",
-		],
+        ],
 		available : [
+            "Adult Content",
 			"Alcohol/Drugs",
 			"Comedy",
 			"Conspiracy",
@@ -89,7 +89,7 @@ function getSimpleFilter() {
 			if (items["simpleFilter"]) {
 				resolve (items["simpleFilter"]);
 			} else {
-				reject ("simpleFilter not found.");
+				reject (new Error("simpleFilter not found."));
 			}
 		})
 
