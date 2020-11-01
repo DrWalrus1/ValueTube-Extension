@@ -47,6 +47,7 @@ function getVideoID(url = new URL(window.location.href)) {
  * called to properly collect the video IDs and video elements.
  */
 function OnPageChange() {
+	videosOnPage = [];
 	switch (window.location.href) {
 		case (page.HOME):
 			window.postMessage(windowMessages.FilterHome, '*');
@@ -282,7 +283,7 @@ function GetPlaylistPageIDs() {
 			}
 		}
 	 });
-	 observer.observe(playlistVidSection, { childList: true, subtree: true });
+	 observer.observe(playlistVidSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
 
 	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -294,7 +295,6 @@ function GetPlaylistPageIDs() {
 			setTimeout(mutationsCallback, 1000);
 		} else {
 			pause = true;
-			console.log("Finished loading IDs.")
 			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
 			setTimeout(mutationsCallback, 1000);
 		}
@@ -330,7 +330,7 @@ function GetPlaylistIDs() {
 			}
 		}
 	 });
-	 observer.observe(playlistVidSection, { childList: true, subtree: true });
+	 observer.observe(playlistVidSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
 
 	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -342,7 +342,6 @@ function GetPlaylistIDs() {
 			setTimeout(mutationsCallback, 1000);
 		} else {
 			pause = true;
-			console.log("Finished loading IDs.")
 			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
 			setTimeout(mutationsCallback, 1000);
 		}
@@ -381,7 +380,7 @@ function GetSubscriptionIDs() {
 	const observer = new MutationObserver(mutations => {
 		for(let mutation of mutations) {
 			 for(let addedNode of mutation.addedNodes) {
-				 if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER") {            
+				 if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER") {
 					loadingIDs = true;
 					pause = false;       
 					let link = addedNode.getElementsByTagName("a")[0];
@@ -397,7 +396,7 @@ function GetSubscriptionIDs() {
 			  }
 		 }
 	 });
-	 observer.observe(SubscriptionSection, { childList: true, subtree: true });
+	 observer.observe(SubscriptionSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
 
 	//checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -409,12 +408,12 @@ function GetSubscriptionIDs() {
 			setTimeout(mutationsCallback, 1000);
 		} else {
 			pause = true;
-			console.log("Finished loading IDs.")
 			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
 			setTimeout(mutationsCallback, 1000);
 		}
 	 }
 	 mutationsCallback();
+
 }
 
 // ------------------ END SUBSCRIPTIONS PAGE FUNCTION ------------------
@@ -457,7 +456,7 @@ function GetRecommendationFeedIDs() {
 			  }
 		 }
 	 });
-	 observer.observe(recommendedSection, { childList: true, subtree: true });
+	 observer.observe(recommendedSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
 
 	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -469,7 +468,6 @@ function GetRecommendationFeedIDs() {
 			setTimeout(mutationsCallback, 1000);
 		} else {
 			pause = true;
-			console.log("Finished loading IDs.")
 			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
 			setTimeout(mutationsCallback, 1000);
 		}
@@ -586,24 +584,53 @@ function SearchItemSectionRenderer(itemSection) {
  * This function collects every videos ID from the YouTube Homepage
 */
 function GetHomePageVideoIDs() {
-	let contents = GetSection();
-	let videoIDs = [];
 	let videoObjects = [];
-	// TODO: Depending on users options remove posts
-	// let sections = contents.getElementsByTagName("ytd-rich-section-renderer");
-	let videos = contents.getElementsByTagName("ytd-rich-item-renderer");
-	for (let index = 0; index < videos.length; index++) {
-		let link = videos[index].getElementsByTagName("a")[0].getAttribute("href");
-		let videoID =  getVideoID(new URL(link, "https://www.youtube.com"));
-		// If first link is a channel ID (e.g. youtube posts)
-		if (videoID == null) {
-			continue;
+	const contents = document.getElementById("contents");
+	const vids = contents.getElementsByTagName("ytd-rich-item-renderer");
+
+	//adding the preloaded videos to the videoObjects array
+	for (let vid of vids) {
+		if (vid.getElementsByTagName("ytd-display-ad-renderer").length == 0) {
+			let link = vid.getElementsByTagName("a")[0].getAttribute('href');
+			let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+			videoObjects.push(new VideoObject(videoID,vid));
 		}
-		videoIDs.push(videoID);
-		videoObjects.push(new VideoObject(videoID,videos[index]));
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
+	const observer = new MutationObserver(mutations => {
+		for(let mutation of mutations) {
+				for(let addedNode of mutation.addedNodes) {
+					if (addedNode.tagName === "YTD-RICH-ITEM-RENDERER") {
+					loadingIDs = true;
+					pause = false;       
+					let link = addedNode.getElementsByTagName("a")[0];
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID,addedNode));
+					}
+				}
+			}
+		});
+		observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
+
+	//checking periodically to see if more videos are loading
+		let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+		}
+		mutationsCallback();
 	}
-	return {videoIDs, videoObjects};
-}
 
 /**
  * This function gets the Form Data from curator and merges that with the videoID.
@@ -763,10 +790,10 @@ async function HandleMessages(event) {
                 if (!isEnabled) {
                     return;
                 }
-				let homePageInfo = GetHomePageVideoIDs();
-				chrome.runtime.sendMessage({ greeting: "Filter", data: homePageInfo["videoIDs"] }, function (response) {
-                    console.log(response);
-                });
+				GetHomePageVideoIDs();
+				// chrome.runtime.sendMessage({ greeting: "Filter", data: homePageInfo["videoIDs"] }, function (response) {
+                //     console.log(response);
+                // });
 				break;
 			case windowMessages.SearchPage:
                 if (!isEnabled) {
@@ -798,7 +825,7 @@ async function HandleMessages(event) {
                             merged.push(obj);
                         }
 
-                        FilterVideos(merged);
+						FilterVideos(merged);
                     });
 				} else {
 					console.error("An error occurred trying to communicate with the extension.");
@@ -812,16 +839,24 @@ async function HandleMessages(event) {
 function FilterVideos(videos) {
 	chrome.runtime.sendMessage({greeting : "GetAdvFilters"}, function(response) {
 		filterLimit = response.farewell;
-		console.log(filterLimit);
-		videos.forEach(vid => {
-			console.log(vid);
-			for (filter in filterLimit) {
-				let filterName = filter.replace(" ", "").replace("/", "");
-				
-				if (typeof vid["prediction"] /* remove this when adding access from Mongo */ !== "undefined" && (vid["prediction"][filterName] * 100) > filterLimit[filter]) {
-					vid["element"].remove();
-				}
+		videosOnPage.push(...videos);
+		UpdateVideoDisplay(filterLimit);
+	});
+}
+
+function UpdateVideoDisplay(filters) {
+	videosOnPage.forEach(vid => {
+		let hidden = false;
+		for (filter in filters) {
+			let filterName = filter.replace(" ", "").replace("/", "");
+			if (typeof vid["prediction"] /* remove this when adding access from Mongo */ !== "undefined" && (vid["prediction"][filterName] * 100) > filters[filter]) {
+				vid["element"].style = "display:none";
+				hidden = true;
+				break;
 			}
-		});
+		}
+		if (!hidden) {
+			vid["element"].style = "";
+		}
 	});
 }

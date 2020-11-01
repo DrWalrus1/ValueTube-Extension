@@ -72,11 +72,11 @@ developerNotifications.onchange = function() {
 curatorInput.onchange = function() {
 	if (curatorInput.checked == true) {
 		localStorage.setItem("VTCuratorMode", "true");
-		modifyYoutubeTabsInWindows();
+		modifyYoutubeTabsInWindows("Curator");
 	} else {
 		localStorage.setItem("VTCuratorMode", "false");   
 	}
-	modifyYoutubeTabsInWindows();
+	modifyYoutubeTabsInWindows("Curator");
 };
 
 /**
@@ -84,18 +84,22 @@ curatorInput.onchange = function() {
  * all windows to create or remove the curator input
  * div.
  */
-function modifyYoutubeTabsInWindows() {
+function modifyYoutubeTabsInWindows(data) {
 	chrome.windows.getAll({"populate": true, "windowTypes" :["normal"]}, function(windowArray) {
 		// Iterate through windows
 		for (let i = 0; i < windowArray.length; i++) {
 			// Iterate through tabs in window
 			for (let x = 0; x < windowArray[i].tabs.length; x++) {
 				if (windowArray[i].tabs[x].url.includes("youtube.com")) {
-					if (localStorage.getItem("VTCuratorMode") == "true") {
-						SetCuratorDiv(true, windowArray[i].tabs[x].id);
-					} else {
-						SetCuratorDiv(false, windowArray[i].tabs[x].id);
-					}
+          if (data == "Curator") {
+            if (localStorage.getItem("VTCuratorMode") == "true") {
+              SetCuratorDiv(true, windowArray[i].tabs[x].id);
+            } else {
+              SetCuratorDiv(false, windowArray[i].tabs[x].id);
+            }
+          } else if (data == "AdvFilters") {
+            SetVideosDisplay(windowArray[i].tabs[x].id);
+          }
 				}
 			}
 		}
@@ -125,6 +129,18 @@ function SetCuratorDiv(state, tabID) {
 			
 		);
 	}
+}
+
+/**
+ * @param {Number} tabID
+ */
+function SetVideosDisplay(tabID) {
+  chrome.tabs.executeScript(
+    tabID,
+      {
+        code : "UpdateVideoDisplay(" + localStorage.getItem("AdvancedFilterVals") + ");"
+      }
+  )
 }
 
 /**
@@ -164,25 +180,35 @@ function createCategorySlider(category) {
   slider.type = "range";
   slider.min = "0";
   slider.max = "100";
+  slider.step = "10";
   let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
   let storedVal = advFilterVals[category];
   slider.defaultValue = (storedVal == null)?"100":storedVal;
-  slider.onclick = function () {
-    const $valueSpan = $('#' + id + 'Span');
-    const $value = $('#' + id + "Slider");
-    $valueSpan.html($value.val());
-    $value.on('input change', () => {
-
-      $valueSpan.html($value.val());
+  // slider.onclick = function () {
+  //   console.log(category + " onchange outer")
+  //   const $valueSpan = $('#' + id + 'Span');
+  //   const $value = $('#' + id + "Slider");
+  //   $valueSpan.html($value.val());
+  //   $value.on('input change', () => {
+  //     console.log(category + " onchange inner")
+  //     $valueSpan.html($value.val());
       
-      console.log(advFilterVals);
-      advFilterVals[category] = $value.val();
-      localStorage.setItem("AdvancedFilterVals", JSON.stringify(advFilterVals));
-    });
+  //   //   let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
+  //   //   //console.log(advFilterVals);
+  //   //   advFilterVals[category] = $value.val();
+  //   //   localStorage.setItem("AdvancedFilterVals", JSON.stringify(advFilterVals));
+  //   //   modifyYoutubeTabsInWindows("AdvFilters");
+  //   });
+  //   document.getElementById(id+"Span").innerHTML = this.value;
+  // }
+  slider.oninput = function () {
     document.getElementById(id+"Span").innerHTML = this.value;
+    let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
+    console.log(advFilterVals);
+    advFilterVals[category] = this.value;
+    localStorage.setItem("AdvancedFilterVals", JSON.stringify(advFilterVals));
+    modifyYoutubeTabsInWindows("AdvFilters");
   }
-  // TODO: Set value to what is stored or 50;
-  // slider.value = 0;
 
   let span = document.createElement("span");
   span.id = id+"Span";
