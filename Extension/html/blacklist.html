@@ -1,31 +1,43 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <link rel="stylesheet" href="../css/toggleswitch.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        <link rel="stylesheet" href="../css/bootstrap.min.css">
-        <link rel="stylesheet" href="../css/popup.css">
-      </head>
-      <body>
-        <div class="flex-container space-between">
-          <a href="popup.html" style="padding-top: 0.5cm ;"><button class="caretButton"><i class="fa fa-caret-left"></i></button></a>
-          <h2 style="padding-top: 0.3cm ;">Blacklist</h2>
-          <div style="visibility: hidden;"><button class="caretButton"><i class="fa fa-caret-right"></i></button></div>
-        </div>
-        <hr>
-          
-         <div class="container" style="padding-top: 2cm; padding-left:2cm;">
-          <div class="row">
-              <div class="col-xs-6">
-                <input type="text" id="blackListInput" aria-label="Small">
-              </div>
-              <div class="col-xs-6">
-                <button type="button" id ="blackListBtn" class="btn btn-primary btn-sm">Search</button>
-              </div>
-          </div>
-         </div>
-          <div style="padding-right: 0.5cm; padding-top:0.5cm; padding-left: 0.5cm;">
-            <textarea id="blackListDisplay"  class ="form-control" rows="10" readonly style="background-color: rgb(252, 252, 252); resize: none; width: 100%;"></textarea> </div>       
-      </body>
-      <script src="../js/storage.js"></script>
+	<head>
+		<link rel="stylesheet" href="../css/toggleswitch.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<link rel="stylesheet" href="../css/bootstrap.min.css">
+		<link rel="stylesheet" href="../css/popup.css">
+	</head>
+	<body style="padding-bottom: 20px;">
+		<div class="flex-container space-between">
+		  	<a href="popup.html" style="padding-top: 0.5cm;" tabindex="-1" ><button class="caretButton"><i class="fa fa-caret-left"></i></button></a>
+		  	<h2 style="padding-top: 0.3cm;">Blacklist</h2>
+		  	<div style="visibility: hidden;"><button class="caretButton"><i class="fa fa-caret-right"></i></button></div>
+		</div>
+		<hr>
+		<div class="container" style="padding-top: 2cm; padding-left:2cm;">
+		  	<div class="row">
+			  	<div class="col-xs-6">
+					<input type="text" id="blackListInput" aria-label="Small" placeholder="Channel Name">
+			  	</div>
+			  	<div id="buttonDiv" class="col-xs-6" style="margin-left: 5px">
+			  	</div>
+		  	</div>
+		</div>
+		<div style="height: 350px;padding-right: 0.5cm; padding-top:0.5cm; padding-left: 0.5cm;">
+			<div id="resultsArea" class="resultsArea" tabindex="0">
+				<div id="option1" class="option" tabindex="0">
+					<img src="../images/ValueTube32.png" class="avatar" alt="">
+					<span style="display:inline-block">
+						<h5>Test Option</h5>
+					</span>
+					<!-- <span style="display:inline-block">
+						<svg width="1.5em" height="1.5em" viewBox="0 0 16 16" class="bi bi-plus-circle-fill" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path fill-rule="evenodd" d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8.5 4.5a.5.5 0 0 0-1 0v3h-3a.5.5 0 0 0 0 1h3v3a.5.5 0 0 0 1 0v-3h3a.5.5 0 0 0 0-1h-3v-3z"/>
+						</svg>
+					</span> -->
+				</div>
+			</div>
+		</div>       
+	  </body>
+	  <script src="../js/storage.js"></script>
+	  <script src="../js/blacklist.js"></script>
 </html>
