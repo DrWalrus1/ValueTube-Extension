@@ -55,9 +55,9 @@ function OnPageChange() {
 		case (page.HOME):
 			window.postMessage(windowMessages.FilterHome, '*');
 			break;
-		// case (page.TRENDING):
-			// FilterTrendingPage();
-			// break;
+		case (page.TRENDING):
+			GetTrendingPageIDs();
+			break;
 		default:
 			if ( (window.location.href).includes(page.VIDEO)) {
 				chrome.runtime.sendMessage({greeting: "IsCurator"}, function(response) {
@@ -78,14 +78,16 @@ function OnPageChange() {
 				}
 
 			} else if ((window.location.href).includes(page.SEARCH)) {
-				window.postMessage(windowMessages.SearchPage, '*');
+				// window.postMessage(windowMessages.SearchPage, '*');
+				GetSearchPageVideoIDs();
 			} else if ( (window.location.href).includes(page.CHANNEL[0]) || (window.location.href).includes(page.CHANNEL[1])) {
-				if ( (window.location.href).includes("/videos")) {
-					// VIDEOS PAGE
-					console.log(FilterChannelVideoPage());
-				} else {
-					console.log(FilterChannelHomePage());
-				}
+				GetChannelPageVideoIDs();
+				// if ( (window.location.href).includes("/videos")) {
+				// 	// VIDEOS PAGE
+				// 	console.log(FilterChannelVideoPage());
+				// } else {
+				// 	console.log(FilterChannelHomePage());
+				// }
 			} else if ( (window.location.href).includes(page.PLAYLIST_PAGE)) {
 				GetPlaylistPageIDs();
 			} else if ( (window.location.href).includes(page.SUBSCRIPTIONS)) {
@@ -354,7 +356,7 @@ function GetPlaylistIDs() {
 
 // ------------------ END PLAYLIST PAGE FUNCTION ------------------
 
-//  ------------------ SUBSCRIPTIONS FUNCTIONS ------------------
+//  ------------------ SUBSCRIPTIONS PAGE FUNCTIONS ------------------
 
 function GetSubscriptionIDs() {
 	let videoObjects = [];
@@ -421,6 +423,57 @@ function GetSubscriptionIDs() {
 
 // ------------------ END SUBSCRIPTIONS PAGE FUNCTION ------------------
 
+//  ------------------ TRENDING PAGE FUNCTIONS ------------------
+
+function GetTrendingPageIDs() {
+	let videoObjects = [];
+	const trendingSection = document.getElementsByTagName("ytd-section-list-renderer")[0];
+	const vidsList = trendingSection.getElementsByTagName("ytd-video-renderer");
+
+	//adding preloaded videos the the videoObjects array
+	for (let elem of vidsList) {
+		let link = elem.getElementsByTagName("a")[0].getAttribute('href');
+		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+		videoObjects.push(new VideoObject(videoID,elem));
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
+	let observer = new MutationObserver(mutations => {
+		for(let mutation of mutations) {
+			 for(let addedNode of mutation.addedNodes) {
+				 if (addedNode.tagName === "YTD-VIDEO-RENDERER") {
+					loadingIDs = true;
+					pause = false;
+					let link = addedNode.getElementsByTagName("a")[0].getAttribute('href');
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID, addedNode));
+				  }
+			  }
+		 }
+	 });
+	 observer.observe(trendingSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
+
+	 //checking periodically to see if more videos are loading
+	 let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+	 }
+	 mutationsCallback();
+}
+
+//  ------------------ END TRENDING PAGE FUNCTIONS ------------------
+
 //  ------------------ RECOMMENDATION FEED FUNCTIONS ------------------
 
 function GetRecommendationFeedIDs() {
@@ -479,6 +532,175 @@ function GetRecommendationFeedIDs() {
 }
 
 //  ------------------ END RECOMMENDATION FEED FUNCTIONS ------------------
+
+//  ---------------------- SEARCH PAGE FUNCTIONS --------------------------
+
+function GetSearchPageVideoIDs() {
+	let videoObjects = [];
+	const contents = document.getElementsByTagName("ytd-section-list-renderer")[0];
+	const vids = contents.getElementsByTagName("ytd-video-renderer");
+
+	//adding the preloaded videos to the videoObjects array
+	for (let vid of vids) {
+		if (vid.getElementsByTagName("ytd-display-ad-renderer").length == 0) {
+			let link = vid.getElementsByTagName("a")[0].getAttribute('href');
+			let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+			videoObjects.push(new VideoObject(videoID,vid));
+		}
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
+	const observer = new MutationObserver(mutations => {
+		for(let mutation of mutations) {
+				for(let addedNode of mutation.addedNodes) {
+					if (addedNode.tagName === "YTD-VIDEO-RENDERER") {
+					loadingIDs = true;
+					pause = false;       
+					let link = addedNode.getElementsByTagName("a")[0];
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID,addedNode));
+				}
+			}
+		}
+	});
+	observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
+
+	//checking periodically to see if more videos are loading
+	let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+	}
+	mutationsCallback();
+}
+
+//  ------------------ END SEARCH PAGE FUNCTIONS ------------------
+
+//  --------------------- HOME PAGE FUNCTIONS ---------------------
+
+/**
+ * This function collects every videos ID from the YouTube Homepage
+*/
+function GetHomePageVideoIDs() {
+	let videoObjects = [];
+	const contents = document.getElementsByTagName("ytd-rich-grid-renderer")[0];
+	const vids = contents.getElementsByTagName("ytd-rich-item-renderer");
+
+	//adding the preloaded videos to the videoObjects array
+	for (let vid of vids) {
+		if (vid.getElementsByTagName("ytd-display-ad-renderer").length == 0) {
+			let link = vid.getElementsByTagName("a")[0].getAttribute('href');
+			let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+			videoObjects.push(new VideoObject(videoID,vid));
+		}
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
+	const observer = new MutationObserver(mutations => {
+		for(let mutation of mutations) {
+				for(let addedNode of mutation.addedNodes) {
+					if (addedNode.tagName === "YTD-RICH-ITEM-RENDERER") {
+					loadingIDs = true;
+					pause = false;       
+					let link = addedNode.getElementsByTagName("a")[0];
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID,addedNode));
+				}
+			}
+		}
+	});
+	observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
+
+	//checking periodically to see if more videos are loading
+	let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+	}
+	mutationsCallback();
+}
+
+//  --------------------- END HOME PAGE FUNCTIONS ---------------------
+
+// ------------------ CHANNEL PAGE FUNCTIONS -------------------------
+
+function GetChannelPageVideoIDs() {
+	let videoObjects = [];
+	const contents = document.getElementsByTagName("ytd-section-list-renderer")[0];
+	const mainVid = contents.getElementsByTagName("ytd-video-renderer");
+	const scrollVids = contents.getElementsByTagName("ytd-grid-video-renderer");
+
+	//adding the header video to the array
+	if (mainVid.length != 0) {
+		let link = mainVid[0].getElementsByTagName("a")[0].getAttribute('href');
+		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+		videoObjects.push(new VideoObject(videoID,mainVid[0]));
+	}
+
+	//adding the preloaded videos to the videoObjects array
+	for (let vid of scrollVids) {
+		let link = vid.getElementsByTagName("a")[0].getAttribute('href');
+		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+		console.log(videoID);
+		videoObjects.push(new VideoObject(videoID,vid));
+	};
+
+	//adding videos that load afterwards to the videoObjects array
+	let loadingIDs = true;
+	let pause = false;
+	const observer = new MutationObserver(mutations => {
+		for(let mutation of mutations) {
+				for(let addedNode of mutation.addedNodes) {
+					if (addedNode.tagName === "YTD-GRID-VIDEO-RENDERER") {
+					loadingIDs = true;
+					pause = false;       
+					let link = addedNode.getElementsByTagName("a")[0];
+					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
+					videoObjects.push(new VideoObject(videoID,addedNode));
+				}
+			}
+		}
+	});
+	observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
+
+	//checking periodically to see if more videos are loading
+	let mutationsCallback = () => {
+		if (loadingIDs) {
+			loadingIDs = false;
+			pause = false;
+			setTimeout(mutationsCallback, 250);
+		} else if (pause) {
+			setTimeout(mutationsCallback, 1000);
+		} else {
+			pause = true;
+			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
+			setTimeout(mutationsCallback, 1000);
+		}
+	}
+	mutationsCallback();
+}
+
+// ------------------ END CHANNEL PAGE FUNCTIONS ---------------------
 
 //  ------------------ COMMENT SECTION REMOVAL FUNCTIONS ------------------
 
@@ -539,102 +761,6 @@ function removeComments() {
 
 //  ------------------ END COMMENT SECTION REMOVAL FUNCTIONS ------------------
 
-function GetSearchPageVideoIDs() {
-	let videoIDs = [];
-	let videoObjects = [];
-	let searchDiv = document.getElementsByTagName("ytd-search")[0];
-	let section = searchDiv.getElementsByTagName("ytd-section-list-renderer")[0];
-
-	for (let i = 0; i < section.children.length; i++) {
-		if (section.children[i].id == "contents") {
-			let contents = section.children[i];
-			// Iterate through item section renderers... (collections of video renderers)
-			for (let x = 0; x < contents.getElementsByTagName("ytd-item-section-renderer").length; x++) {
-				let obj = SearchItemSectionRenderer(contents.getElementsByTagName("ytd-item-section-renderer")[x]);
-				videoIDs.push(...obj["videoIDs"]);
-				videoObjects.push(...obj["videoObjects"]);
-			}
-			break;
-		}
-	}
-	return {videoIDs, videoObjects};
-}
-
-function SearchItemSectionRenderer(itemSection) {
-	let videoIDs = [];
-	let videoObjects = [];
-	let items;
-	for (let i = 0; i < itemSection.children.length; i++) {
-		if (itemSection.children[i].id == "contents") {
-			items = itemSection.children[i].children;
-			break;
-		}
-	}
-
-	for (let i = 0; i < items.length; i++) {
-		if (items[i].tagName == "YTD-VIDEO-RENDERER") {
-			let videoID = getVideoID(new URL(items[i].getElementsByTagName("a")[0].href));
-			videoIDs.push(videoID);
-			videoObjects.push(new VideoObject(videoID, items[i]));
-		}
-	}
-	return {videoIDs, videoObjects};
-
-
-}
-
-/**
- * This function collects every videos ID from the YouTube Homepage
-*/
-function GetHomePageVideoIDs() {
-	let videoObjects = [];
-	const contents = document.getElementById("contents");
-	const vids = contents.getElementsByTagName("ytd-rich-item-renderer");
-
-	//adding the preloaded videos to the videoObjects array
-	for (let vid of vids) {
-		if (vid.getElementsByTagName("ytd-display-ad-renderer").length == 0) {
-			let link = vid.getElementsByTagName("a")[0].getAttribute('href');
-			let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-			videoObjects.push(new VideoObject(videoID,vid));
-		}
-	};
-
-	//adding videos that load afterwards to the videoObjects array
-	let loadingIDs = true;
-	let pause = false;
-	const observer = new MutationObserver(mutations => {
-		for(let mutation of mutations) {
-				for(let addedNode of mutation.addedNodes) {
-					if (addedNode.tagName === "YTD-RICH-ITEM-RENDERER") {
-					loadingIDs = true;
-					pause = false;       
-					let link = addedNode.getElementsByTagName("a")[0];
-					let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-					videoObjects.push(new VideoObject(videoID,addedNode));
-					}
-				}
-			}
-		});
-		observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
-
-	//checking periodically to see if more videos are loading
-		let mutationsCallback = () => {
-		if (loadingIDs) {
-			loadingIDs = false;
-			pause = false;
-			setTimeout(mutationsCallback, 250);
-		} else if (pause) {
-			setTimeout(mutationsCallback, 1000);
-		} else {
-			pause = true;
-			HandleMessages(new MessageEvent("message", {source: window, data: {videoObjects: videoObjects.splice(0, videoObjects.length)}}));
-			setTimeout(mutationsCallback, 1000);
-		}
-		}
-		mutationsCallback();
-	}
-
 /**
  * This function gets the Form Data from curator and merges that with the videoID.
  */
@@ -655,118 +781,6 @@ function CreateJForm() {
 	}
 	return JForm;
 }
-
-// ------------------ CHANNEL PAGE FUNCTIONS -------------------------
-
-//HOME
-function FilterChannelHomePage() {
-	let sections = GetSection().querySelectorAll("ytd-item-section-renderer");
-	let videoIDs = [];
-	let videoObjects = [];
-	sections.forEach(element => {
-		for (let i = 0; i < element.children.length; i++) {
-			if (element.children[i].id == "contents") {
-				let sectionContents = element.children[i];
-				let results;
-				switch (sectionContents.children[0].tagName) {
-					case "YTD-CHANNEL-VIDEO-PLAYER-RENDERER":
-						results = GetFeaturedVideoID(sectionContents.children[0]);
-						videoIDs.push(results.vID)
-						videoObjects.push(new VideoObject(results.vID, results.element));
-						break;
-					case "YTD-SHELF-RENDERER":
-						results = ChannelSearchShelf(sectionContents.children[0]);
-						videoIDs = videoIDs.concat(results.videoIDs);
-						videoObjects = videoObjects.concat(results.videoObjects);
-						break;
-					default:
-						console.error("Error: Unexpected Section TagName Found.");
-						break;
-				}
-			}
-		} 
-	});
-	return {"videoIDs": videoIDs, "videoObjects": videoObjects};
-}
-
-/**
- * 
- * @param {HTMLElement} element 
- */
-function GetFeaturedVideoID(element) {
-	for (let i = 0; i < element.children.length; i++) {
-		if (element.children[i].id == "content") {
-			let content = element.children[i];
-			let links = content.children[0].children[0].querySelectorAll("a");
-			for (const link of links) {
-				return {"vID" : getVideoID(new URL(link.href)), "element" : element};
-			}
-		}
-	}
-}
-
-/**
- * 
- * @param {HTMLElement} shelf 
- */
-function ChannelSearchShelf(shelf) {
-	for (let i = 0; i < shelf.children.length; i++) {
-		if (shelf.children[i].id == "dismissable") {
-			let dismissable = shelf.children[i];
-			for (let x = 0; x < dismissable.children.length; x++) {
-				if (dismissable.children[x].id == "contents" && dismissable.children[x].children[0].tagName == "YT-HORIZONTAL-LIST-RENDERER") {
-					let horizontalList = dismissable.children[x].children[0];
-					return ChannelSearchHorizontalList(horizontalList);
-				}
-			}
-		}
-	}
-}
-
-/**
- * 
- * @param {HTMLElement} listElement 
- */
-function ChannelSearchHorizontalList(listElement) {
-	let videoIDs = [];
-	let videoObjects = [];
-	for (let i = 0; i < listElement.children.length; i++) {
-		if (listElement.children[i].id == "scroll-container") {
-			let items = listElement.children[i].children[0];
-			// Iterate through items
-			for (let x = 0; x < items.children.length; x++) {
-				// TODO: Check if its a playlist or channel renderer
-				// Get links from grid element
-				let links = items.children[x].getElementsByTagName("a");
-				for (const link of links) {
-					let videoID = getVideoID(new URL(link.href));
-					videoIDs.push(videoID);
-					videoObjects.push(new VideoObject(videoID, items.children[x]));
-					break;
-				}
-			}
-			return {videoIDs, videoObjects};
-		}
-	}
-}
-
-//VIDEOS
-function FilterChannelVideoPage() {
-	let primary = document.getElementsByTagName("ytd-two-column-browse-results-renderer");
-	let videoIDs = [];
-	let videoObjects = [];
-	for (let i = 0; i < primary.length; i++) {
-		let innerContents = primary[i].children["primary"].children[0].children["contents"].children[0].children["contents"].children[0]["children"]["items"]
-		for (let index = 0; index < innerContents.childElementCount; index++) {
-			let videoID = getVideoID(new URL(innerContents.children[index].getElementsByTagName("a")[0].href, "https://www.youtube.com/"));
-			videoIDs.push(videoID);
-			videoObjects.push(new VideoObject(videoID, innerContents.children[index]));
-		}
-	}
-	return {"videoIDs": videoIDs, "videoObjects": videoObjects};
-}
-
-// ------------------ END CHANNEL PAGE FUNCTIONS ---------------------
 
 window.addEventListener("message", function(event) {
 	HandleMessages(event);
@@ -794,9 +808,6 @@ async function HandleMessages(event) {
                     return;
                 }
 				GetHomePageVideoIDs();
-				// chrome.runtime.sendMessage({ greeting: "Filter", data: homePageInfo["videoIDs"] }, function (response) {
-                //     console.log(response);
-                // });
 				break;
 			case windowMessages.SearchPage:
                 if (!isEnabled) {
