@@ -38,6 +38,7 @@ a, a:link, a:visited, a:hover, a:active {
     width: 100%;
     border: 1px solid black;
     background-color: white;
+    overflow-y: scroll;
 }
 
 .option {
