@@ -8,6 +8,7 @@ const windowMessages = {
 let categoryArray = [];
 let isEnabled;
 let videosOnPage = [];
+let observers = [];
 chrome.runtime.sendMessage({greeting : "AreFiltersEnabled"}, function (response) {
     isEnabled = response.farewell;
     console.log(`Filter Enable: ${isEnabled}`);
@@ -50,7 +51,12 @@ function getVideoID(url = new URL(window.location.href)) {
  * called to properly collect the video IDs and video elements.
  */
 function OnPageChange() {
+	console.log("Page change.")
 	videosOnPage = [];
+	observers.forEach(ob => {
+		ob.disconnect();
+	})
+	observers = [];
 	switch (window.location.href) {
 		case (page.HOME):
 			window.postMessage(windowMessages.FilterHome, '*');
@@ -258,6 +264,14 @@ function GetSection() {
 	return document.getElementById("contents");
 }
 
+function GetContentsSection(outer, inner) {
+	for (let i = 0; i < outer.length ; i++) {
+		if (outer[i].getElementsByTagName(inner).length > 0) {
+			return outer[i];
+		}
+	}
+}
+
 //  ------------------ PLAYLIST PAGE FUNCTIONS ------------------
 
 function GetPlaylistPageIDs() {
@@ -289,6 +303,7 @@ function GetPlaylistPageIDs() {
 		}
 	 });
 	 observer.observe(playlistVidSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	 observers.push(observer);
 
 	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -336,6 +351,7 @@ function GetPlaylistIDs() {
 		}
 	 });
 	 observer.observe(playlistVidSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	 observers.push(observer);
 
 	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -360,8 +376,11 @@ function GetPlaylistIDs() {
 
 function GetSubscriptionIDs() {
 	let videoObjects = [];
-	const SubscriptionSection = document.getElementsByTagName("ytd-section-list-renderer")[0];
-	const section = SubscriptionSection.getElementsByTagName("ytd-item-section-renderer");
+	let contents = document.getElementsByTagName("ytd-section-list-renderer");
+	let inner = "ytd-item-section-renderer";
+	
+	const SubscriptionSection = GetContentsSection(contents, inner);
+	const section = SubscriptionSection.getElementsByTagName(inner);
 
 	//adding the preloaded videos to the videoObjects array
 	for (let elem of section) {
@@ -402,6 +421,7 @@ function GetSubscriptionIDs() {
 		 }
 	 });
 	 observer.observe(SubscriptionSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	 observers.push(observer);
 
 	//checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -427,8 +447,11 @@ function GetSubscriptionIDs() {
 
 function GetTrendingPageIDs() {
 	let videoObjects = [];
-	const trendingSection = document.getElementsByTagName("ytd-section-list-renderer")[0];
-	const vidsList = trendingSection.getElementsByTagName("ytd-video-renderer");
+	let contents = document.getElementsByTagName("ytd-section-list-renderer");
+	let inner = "ytd-video-renderer";
+
+	const trendingSection = GetContentsSection(contents, inner);
+	const vidsList = trendingSection.getElementsByTagName(inner);
 
 	//adding preloaded videos the the videoObjects array
 	for (let elem of vidsList) {
@@ -454,6 +477,7 @@ function GetTrendingPageIDs() {
 		 }
 	 });
 	 observer.observe(trendingSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	 observers.push(observer);
 
 	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -513,6 +537,7 @@ function GetRecommendationFeedIDs() {
 		 }
 	 });
 	 observer.observe(recommendedSection, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	 observers.push(observer);
 
 	 //checking periodically to see if more videos are loading
 	 let mutationsCallback = () => {
@@ -566,6 +591,7 @@ function GetSearchPageVideoIDs() {
 		}
 	});
 	observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	observers.push(observer);
 
 	//checking periodically to see if more videos are loading
 	let mutationsCallback = () => {
@@ -622,6 +648,7 @@ function GetHomePageVideoIDs() {
 		}
 	});
 	observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	observers.push(observer);
 
 	//checking periodically to see if more videos are loading
 	let mutationsCallback = () => {
@@ -682,6 +709,7 @@ function GetChannelPageVideoIDs() {
 		}
 	});
 	observer.observe(contents, { childList: true, subtree: true, attributeFilter: ["tag"] });
+	observers.push(observer);
 
 	//checking periodically to see if more videos are loading
 	let mutationsCallback = () => {
