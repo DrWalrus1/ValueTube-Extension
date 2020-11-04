@@ -36,17 +36,17 @@ blackListSwitch.onchange = function() {
 	save_options();
 }
 
-whiteListSwitch.onchange = function() {
-	console.log("changed");
-	if (whiteListSwitch.checked == true) {
-		localStorage.setItem("Whitelist", "true");
-		blackListSwitch.checked = false;
-		blackListSwitch.onchange();
-	} else {
-		localStorage.setItem("Whitelist", "false");
-	}
-	save_options();
-}
+// whiteListSwitch.onchange = function() {
+// 	console.log("changed");
+// 	if (whiteListSwitch.checked == true) {
+// 		localStorage.setItem("Whitelist", "true");
+// 		blackListSwitch.checked = false;
+// 		blackListSwitch.onchange();
+// 	} else {
+// 		localStorage.setItem("Whitelist", "false");
+// 	}
+// 	save_options();
+// }
 
 function SetIsEnabledInWindows() {
     chrome.windows.getAll({"populate": true, "windowTypes" :["normal"]}, function(windowArray) {
@@ -56,14 +56,34 @@ function SetIsEnabledInWindows() {
 			for (let x = 0; x < windowArray[i].tabs.length; x++) {
 				if (windowArray[i].tabs[x].url.includes("youtube.com")) {
                     if (localStorage.getItem("AreFiltersEnabled") == "true") {
+						if (localStorage.getItem("advancedFilter") == "true") {
+							SetVideosDisplay(windowArray[i].tabs[x].id, localStorage.getItem("AdvancedFilterVals"));
+						} else {
+							SetVideosDisplay(windowArray[i].tabs[x].id, localStorage.getItem("SimpleFilterVals"));
+						}
                         SetIsEnabled(true, windowArray[i].tabs[x].id);
                     } else {
+						SetVideosDisplay(windowArray[i].tabs[x].id, "{}");
                         SetIsEnabled(false, windowArray[i].tabs[x].id);
                     }
                 }
             }
         }
     })
+}
+
+function modifyYoutubeTabsInWindows() {
+	chrome.windows.getAll({"populate": true, "windowTypes" :["normal"]}, function(windowArray) {
+		// Iterate through windows
+		for (let i = 0; i < windowArray.length; i++) {
+			// Iterate through tabs in window
+			for (let x = 0; x < windowArray[i].tabs.length; x++) {
+				if (windowArray[i].tabs[x].url.includes("youtube.com")) {
+					SetVideosDisplay(windowArray[i].tabs[x].id, localStorage.getItem("SimpleFilterVals"));
+				}
+			}
+		}
+	})
 }
 
 /**
@@ -90,6 +110,18 @@ function SetIsEnabled(state, tabID) {
 		);
 	}
 }
+
+/**
+ * @param {Number} tabID
+ */
+function SetVideosDisplay(tabID, data) {
+	chrome.tabs.executeScript(
+	  tabID,
+		{
+		  code : "UpdateVideoDisplay(" + data + ");"
+		}
+	)
+  }
 
 // chrome.storage.local.onChange.addListener(function(changes, storageName){
 //     chrome.browserAction.setBadgeText({"text": "1"});
@@ -121,6 +153,7 @@ async function addOptionsToSelect() {
 function createFilterOption(filterName) {
 	let value = filterName.replace('/', '').replace(' ', '');;
 	let option = document.createElement("option");
+	let filterAmount = "15";
 	option.value = value;
 	option.innerHTML = filterName;
 	option.onclick = function () {
@@ -128,6 +161,9 @@ function createFilterOption(filterName) {
 		let newParentElement = activeSelect;
 		if (parentID == "activeSelect") {
 			newParentElement = availableSelect;
+			filterAmount = "100";
+		} else {
+			filterAmount = "15";
 		}
 		for (const child of newParentElement.childNodes) {
 			if (this.innerHTML < child.innerHTML) {
@@ -140,6 +176,14 @@ function createFilterOption(filterName) {
 		}
 		this.selected = false;
 		setSimpleFilter(getSelectedSimpleFilter());
+
+		let simpFilterVals = (localStorage.getItem("SimpleFilterVals") == null)?{}:JSON.parse(localStorage.getItem("SimpleFilterVals"));
+		simpFilterVals[filterName] = filterAmount;
+		localStorage.setItem("SimpleFilterVals", JSON.stringify(simpFilterVals));
+		console.log(simpFilterVals);
+		if (localStorage.getItem("AreFiltersEnabled") == "true") {
+			modifyYoutubeTabsInWindows();
+		}
 	}
 
 	return option;

@@ -101,8 +101,14 @@ chrome.runtime.onMessage.addListener(
 	  case "GetCategories":
 		sendResponse({farewell: JSON.parse(localStorage.getItem("categories"))});
 		break;
+	  case "IsAdvFilters":
+		sendResponse({farewell: JSON.parse(localStorage.getItem("advancedFilter"))});
+		break;
 	  case "GetAdvFilters":
 		sendResponse({farewell: JSON.parse(localStorage.getItem("AdvancedFilterVals"))});
+		break;
+	  case "GetSimpFilters":
+		sendResponse({farewell: JSON.parse(localStorage.getItem("SimpleFilterVals"))});
 		break;
 	  default:
 		sendResponse({farewell: "Unknown message received by extension."});

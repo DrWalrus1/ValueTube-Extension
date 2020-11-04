@@ -29,9 +29,12 @@ if (localStorage.getItem("VTCuratorMode") == "true") {
 advancedFilter.onchange = function() {
   if (advancedFilter.checked == true) {
     localStorage.setItem("advancedFilter", "true");
+    modifyYoutubeTabsInWindows("WithFilters");
     document.getElementById("advancedFilter").style.display = "block";
   } else {
     localStorage.setItem("advancedFilter", "false");
+    //localStorage.removeItem("AdvancedFilterVals");
+    modifyYoutubeTabsInWindows("WithoutFilters");
     document.getElementById("advancedFilter").style.display = "none";
   }
 }
@@ -52,6 +55,12 @@ developerMode.onchange = function() {
   } else {
     localStorage.setItem("DeveloperMode", "false");
     document.getElementById("developerOptions").style.visibility = "hidden";
+
+    curatorInput.checked = false;
+    modifyYoutubeTabsInWindows("Curator");
+    localStorage.setItem("VTCuratorMode", "false");
+    modifyYoutubeTabsInWindows("Curator");
+
   }
   console.log("Developer Mode value: " + developerMode.checked);
   console.log("Local Storage developer mode value: " + localStorage.getItem("DeveloperMode"));
@@ -97,8 +106,11 @@ function modifyYoutubeTabsInWindows(data) {
             } else {
               SetCuratorDiv(false, windowArray[i].tabs[x].id);
             }
-          } else if (data == "AdvFilters") {
-            SetVideosDisplay(windowArray[i].tabs[x].id);
+          } else if (data == "WithFilters") {
+            SetVideosDisplay(windowArray[i].tabs[x].id, localStorage.getItem("AdvancedFilterVals"));
+          }
+          else if (data == "WithoutFilters") {
+            SetVideosDisplay(windowArray[i].tabs[x].id, "{}");
           }
 				}
 			}
@@ -134,11 +146,11 @@ function SetCuratorDiv(state, tabID) {
 /**
  * @param {Number} tabID
  */
-function SetVideosDisplay(tabID) {
+function SetVideosDisplay(tabID, data) {
   chrome.tabs.executeScript(
     tabID,
       {
-        code : "UpdateVideoDisplay(" + localStorage.getItem("AdvancedFilterVals") + ");"
+        code : "UpdateVideoDisplay(" + data + ");"
       }
   )
 }
@@ -184,30 +196,13 @@ function createCategorySlider(category) {
   let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
   let storedVal = advFilterVals[category];
   slider.defaultValue = (storedVal == null)?"100":storedVal;
-  // slider.onclick = function () {
-  //   console.log(category + " onchange outer")
-  //   const $valueSpan = $('#' + id + 'Span');
-  //   const $value = $('#' + id + "Slider");
-  //   $valueSpan.html($value.val());
-  //   $value.on('input change', () => {
-  //     console.log(category + " onchange inner")
-  //     $valueSpan.html($value.val());
-      
-  //   //   let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
-  //   //   //console.log(advFilterVals);
-  //   //   advFilterVals[category] = $value.val();
-  //   //   localStorage.setItem("AdvancedFilterVals", JSON.stringify(advFilterVals));
-  //   //   modifyYoutubeTabsInWindows("AdvFilters");
-  //   });
-  //   document.getElementById(id+"Span").innerHTML = this.value;
-  // }
+
   slider.oninput = function () {
     document.getElementById(id+"Span").innerHTML = this.value;
     let advFilterVals = (localStorage.getItem("AdvancedFilterVals") == null)?{}:JSON.parse(localStorage.getItem("AdvancedFilterVals"));
-    console.log(advFilterVals);
     advFilterVals[category] = this.value;
     localStorage.setItem("AdvancedFilterVals", JSON.stringify(advFilterVals));
-    modifyYoutubeTabsInWindows("AdvFilters");
+    modifyYoutubeTabsInWindows("WithFilters");
   }
 
   let span = document.createElement("span");

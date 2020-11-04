@@ -685,7 +685,6 @@ function GetChannelPageVideoIDs() {
 	for (let vid of scrollVids) {
 		let link = vid.getElementsByTagName("a")[0].getAttribute('href');
 		let videoID = getVideoID(new URL(link, "https://www.youtube.com"));
-		console.log(videoID);
 		videoObjects.push(new VideoObject(videoID,vid));
 	};
 
@@ -868,7 +867,6 @@ async function HandleMessages(event) {
                     });
 				} else {
 					console.error("An error occurred trying to communicate with the extension.");
-					// console.log(event);
 				}
 				break;
 		}
@@ -876,11 +874,21 @@ async function HandleMessages(event) {
 }
 
 function FilterVideos(videos) {
-	chrome.runtime.sendMessage({greeting : "GetAdvFilters"}, function(response) {
-		filterLimit = response.farewell;
-		videosOnPage.push(...videos);
-		UpdateVideoDisplay(filterLimit);
+	videosOnPage.push(...videos);
+	let filterLimit = "";
+	chrome.runtime.sendMessage({greeting : "IsAdvFilters"}, function(response) {
+		if (response.farewell) {
+			chrome.runtime.sendMessage({greeting : "GetAdvFilters"}, function(response) {
+				filterLimit = response.farewell;
+				
+			});
+		} else {
+			chrome.runtime.sendMessage({greeting : "GetSimpFilters"}, function(response) {
+				filterLimit = response.farewell;
+			});
+		}
 	});
+	UpdateVideoDisplay(filterLimit);
 }
 
 function UpdateVideoDisplay(filters) {
