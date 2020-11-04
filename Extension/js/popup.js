@@ -166,8 +166,9 @@ function createFilterOption(filterName) {
 			filterAmount = "15";
 		}
 		for (const child of newParentElement.childNodes) {
-			if (this.innerHTML < child.innerHTML) {
-				newParentElement.insertBefore(this, child)
+			if (this.value.toUpperCase() <= child.value.toUpperCase()) {
+				newParentElement.insertBefore(this, child);
+				break;
 			}
 		}
 		parentID = $(this).parent().attr("id");
