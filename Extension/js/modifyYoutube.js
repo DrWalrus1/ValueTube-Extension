@@ -9,10 +9,7 @@ let categoryArray = [];
 let isEnabled;
 let videosOnPage = [];
 let observers = [];
-chrome.runtime.sendMessage({greeting : "AreFiltersEnabled"}, function (response) {
-    isEnabled = response.farewell;
-    console.log(`Filter Enable: ${isEnabled}`);
-})
+chrome.runtime.sendMessage({greeting : "AreFiltersEnabled"});
 chrome.runtime.sendMessage({greeting : "GetCategories"}, function(response) {
 	categoryArray = response.farewell;
 });

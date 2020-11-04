@@ -9,6 +9,25 @@ chrome.runtime.onStartup.addListener(function() {
   updateCategories();
 });
 
+class Log {
+	
+	/**
+	 * 
+	 * @param {String} type 
+	 * @param {Number} code 
+	 * @param {String} message 
+	 */
+	constructor(type = 'INFO', code = 200, message = "Message not set.") {
+		this.type = type;
+		this.code = code;
+		this.message = message;
+	}
+
+	PrintLog() {
+		console.log(`[${this.type}]: ${this.message} (${this.code})`);
+    }
+}
+
 chrome.runtime.onInstalled.addListener(function(details) {
   updateCategories();
   var contextMenuItem = {
@@ -39,7 +58,22 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	switch (request.greeting) {
 		case "AreFiltersEnabled":
-			sendResponse({farewell: localStorage.getItem("AreFiltersEnabled") == "true"})
+			// TODO: Use sender tab id to execute script
+			if (localStorage.getItem("AreFiltersEnabled") == "true") {
+				chrome.tabs.executeScript(
+					sender.tab.id,
+					{
+						code : "isEnabled = true;"
+					}
+				)
+			} else {
+				chrome.tabs.executeScript(
+					sender.tab.id,
+					{
+						code : "isEnabled = false;"
+					}
+				)
+			}
 		break;
 	  case "IsCurator":
 		sendResponse({farewell: localStorage.getItem("VTCuratorMode")});
@@ -119,7 +153,7 @@ function sendCuratorData(JForm) {
  * @param {Array<String>} videoIDs 
  */
 function sendFilterData(videoIDs) {
-  return new Promise((resolve, reject)=> {
+  return new Promise((resolve, reject) => {
 	var submit = new XMLHttpRequest();
 	submit.open("POST", API_PAGES.filter, true);
 	submit.setRequestHeader("Content-Type", "application/json");
@@ -196,10 +230,10 @@ function updateCategories() {
 
   	request.onload = function() {
 		if (request.status != 200) { // analyze HTTP status of the response
-		return false; // e.g. 404: Not Found
+			return false; // e.g. 404: Not Found
 		} else { // show the result
 		// TODO: Error Handling
-		return true; // response is the server
+			return true; // response is the server
 		}
   	}
   

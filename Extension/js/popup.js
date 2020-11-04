@@ -1,5 +1,7 @@
 let blackListSwitch = document.getElementById("bListSwitch");
 let whiteListSwitch = document.getElementById("wListSwitch");
+let activeSelect = document.getElementById("activeSelect");
+let availableSelect = document.getElementById("availableSelect");
 let filterSwitch = document.getElementById("FilterSwitch");
 
 if (localStorage.getItem("AreFiltersEnabled") == "true") {
@@ -94,32 +96,66 @@ function SetIsEnabled(state, tabID) {
 // })
 
 
-function activeToAvailable () {
-    var active = document.getElementsByClassName('active');
-    var available = document.getElementsByClassName('available');
-    var activeSelect = document.getElementById('act')
-    var availableSelect = document.getElementById('ava')
-    var option = document.getElementsByTagName('option');
+async function addOptionsToSelect() {
+	const simpleFilter = await getSimpleFilter().catch( (error) => {
+        if (error.message == "simpleFilter not found.") {
+            setSimpleFilter();
+        }
+    }).then(async function() {
+        return await getSimpleFilter()
+    });
+	let active = simpleFilter.active;
+	let available = simpleFilter.available;
 
-        for (x of option) {
-            if (x.selected == true && !activeSelect.contains(x)){
-                activeSelect.appendChild(x);}
-        }; 
-    }
+	activeSelect.childNodes = new Array();
+	availableSelect.childNodes = new Array();
 
-
-    
-function availableToActive () {
-
-    var active = document.getElementsByClassName('active');
-    var available = document.getElementsByClassName('available');
-    var activeSelect = document.getElementById('act')
-    var availableSelect = document.getElementById('ava')
-    var option = document.getElementsByTagName('option');
-
-    for (x of option) {
-        if (x.selected == true && !availableSelect.contains(x)){
-            availableSelect.appendChild(x);}
-    }; 
-
+	for (const i of active) {
+		activeSelect.appendChild(createFilterOption(i));
+	}
+	for (const i of available) {
+		availableSelect.appendChild(createFilterOption(i));
+	}
 }
+
+function createFilterOption(filterName) {
+	let value = filterName.replace('/', '').replace(' ', '');;
+	let option = document.createElement("option");
+	option.value = value;
+	option.innerHTML = filterName;
+	option.onclick = function () {
+		let parentID = $(this).parent().attr("id");
+		let newParentElement = activeSelect;
+		if (parentID == "activeSelect") {
+			newParentElement = availableSelect;
+		}
+		for (const child of newParentElement.childNodes) {
+			if (this.innerHTML < child.innerHTML) {
+				newParentElement.insertBefore(this, child)
+			}
+		}
+		parentID = $(this).parent().attr("id");
+		if (parentID != newParentElement.id) {
+			newParentElement.appendChild(this);
+		}
+		this.selected = false;
+		setSimpleFilter(getSelectedSimpleFilter());
+	}
+
+	return option;
+}
+
+function getSelectedSimpleFilter() {
+	let active = [];
+	let available = [];
+
+	for (const i of activeSelect.children) {
+		active.push(i.innerHTML);
+	}
+	for (const i of availableSelect.children) {
+		available.push(i.innerHTML);
+	}
+	return {active, available};
+}
+
+addOptionsToSelect();

@@ -47,3 +47,51 @@ function reset_options() {
 	alert("ValueTube Options have been reset.");
 	});
 }
+
+function getCategories() {
+	return JSON.parse(localStorage.getItem("categories"));
+}
+
+function setSimpleFilter(newConfig = {
+		active : [
+        ],
+		available : [
+            "Adult Content",
+			"Alcohol/Drugs",
+			"Comedy",
+			"Conspiracy",
+			"Education",
+			"Gambling",
+			"Gaming",
+			"Horror",
+			"LGBT",
+			"Movies/TV",
+			"Music",
+			"News/Politics",
+			"Promotional",
+			"Religion",
+			"Romance",
+			"Sports",
+			"Violence",
+			"Vlog"
+		]
+	}) {
+		localStorage.setItem("simpleFilter", JSON.stringify(newConfig));
+		chrome.storage.sync.set({simpleFilter : newConfig}, function() {
+			console.log("Simple filter set.");
+		})
+
+}
+
+function getSimpleFilter() {
+	return new Promise((resolve, reject) => {
+		chrome.storage.sync.get(["simpleFilter"], function (items) {
+			if (items["simpleFilter"]) {
+				resolve (items["simpleFilter"]);
+			} else {
+				reject (new Error("simpleFilter not found."));
+			}
+		})
+
+	})
+}
