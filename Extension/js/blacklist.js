@@ -53,7 +53,6 @@ async function searchYoutuber(name) {
 		if (request.status != 200) { // analyze HTTP status of the response
 			return false; // e.g. 404: Not Found
 		} else { // show the result
-		// TODO: Error Handling
 			return true; // response is the server
 		}
   	}

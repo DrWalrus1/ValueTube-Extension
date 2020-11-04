@@ -42,7 +42,7 @@ function getVideoID(url = new URL(window.location.href)) {
 	return (new URLSearchParams(url.search)).get('v');
 }
 
-// FIXME
+
 /**
  * Checks the url and determines what functions need to be
  * called to properly collect the video IDs and video elements.
@@ -827,7 +827,6 @@ async function HandleMessages(event) {
 				});
 				break;
 			case windowMessages.FilterHome:
-                // TODO: Need to send user filters
                 if (!isEnabled) {
                     return;
                 }
@@ -896,7 +895,7 @@ function UpdateVideoDisplay(filters) {
 		let hidden = false;
 		for (filter in filters) {
 			let filterName = filter.replace(" ", "").replace("/", "");
-			if (typeof vid["prediction"] /* remove this when adding access from Mongo */ !== "undefined" && (vid["prediction"][filterName] * 100) > filters[filter]) {
+			if (typeof vid["prediction"] !== "undefined" && (vid["prediction"][filterName] * 100) > filters[filter]) {
 				vid["element"].style = "display:none";
 				hidden = true;
 				break;

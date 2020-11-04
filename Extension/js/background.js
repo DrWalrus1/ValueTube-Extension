@@ -58,7 +58,6 @@ chrome.runtime.onMessage.addListener(
   function(request, sender, sendResponse) {
 	switch (request.greeting) {
 		case "AreFiltersEnabled":
-			// TODO: Use sender tab id to execute script
 			if (localStorage.getItem("AreFiltersEnabled") == "true") {
 				chrome.tabs.executeScript(
 					sender.tab.id,
@@ -140,7 +139,6 @@ function sendCuratorData(JForm) {
 	  if (submit.status != 200) { // analyze HTTP status of the response
 		return false; // e.g. 404: Not Found
 	  } else { // show the result
-		// TODO: Error Handling
 		// return true; // response is the server
 	  }
 	}
@@ -168,7 +166,6 @@ function sendFilterData(videoIDs) {
 	  if (submit.status != 200) { // analyze HTTP status of the response
 		return false; // e.g. 404: Not Found
 	  } else { // show the result
-		// TODO: Error Handling
 		return true; // response is the server
 	  }
 	}
@@ -238,7 +235,6 @@ function updateCategories() {
 		if (request.status != 200) { // analyze HTTP status of the response
 			return false; // e.g. 404: Not Found
 		} else { // show the result
-		// TODO: Error Handling
 			return true; // response is the server
 		}
   	}
