@@ -1,6 +1,6 @@
 {
 	"name" : "ValueTube",
-	"version" : "0.7",
+	"version" : "0.9",
 	"description" : "This is the ValueTube Extension",
 	"permissions": [
 		"tabs",
