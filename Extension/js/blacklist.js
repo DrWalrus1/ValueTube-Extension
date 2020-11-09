@@ -43,10 +43,10 @@ function createOptionDiv(name, imageSrc) {
  * @param {String} name 
  */
 async function searchYoutuber(name) {
-    name = name.replaceAll(" ", "");
     let request = new XMLHttpRequest();
     request.open('GET', 'https://api.valuetube.net/filter/youtuber?channelName=' + name);
     request.setRequestHeader("Content-Type", "application/json");
+    // request.setRequestHeader("Access-Control-Allow-Origin", "*");
   	request.send();
 
   	request.onload = function() {
@@ -61,11 +61,12 @@ async function searchYoutuber(name) {
 		if (request.readyState === 4) {
 			let response = JSON.parse(request.response);
 			if (response) {
-                let imgURL = await getImage(response.thumbnails.default.url)
-                let channelTitle = response.title;
-                let newOption = createOptionDiv(channelTitle, imgURL)
-                resultsArea.appendChild(newOption);
-				// console.log(response);
+                for (const i of response.result) {
+                    let imgURL = await getImage(i.thumbnailURL);
+                    let channelTitle = i.title;
+                    let newOption = createOptionDiv(channelTitle, imgURL);
+                    resultsArea.appendChild(newOption);
+                }
 			} else {
 				console.error("Something went wrong. Please try again");
 			}
