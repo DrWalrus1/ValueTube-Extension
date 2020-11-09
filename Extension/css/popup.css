@@ -1,7 +1,6 @@
 body {
-    /* body border only for visualising body size*/
+    height: 470px;
     margin: 0 0.5em;
-    /*background-color: rgb(39, 39, 39); DARK THEME*/
     background-color: whitesmoke;
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: black;
