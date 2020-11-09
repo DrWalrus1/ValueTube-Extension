@@ -44,6 +44,7 @@ function createOptionDiv(name, imageSrc) {
  */
 async function searchYoutuber(name) {
     let request = new XMLHttpRequest();
+    resultsArea.innerHTML = "";
     request.open('GET', 'https://api.valuetube.net/filter/youtuber?channelName=' + name);
     request.setRequestHeader("Content-Type", "application/json");
     // request.setRequestHeader("Access-Control-Allow-Origin", "*");
