@@ -19,11 +19,9 @@ function addButton() {
 }
 
 function createOptionDiv(name, imageSrc) {
-    let div = document.createElement("div");
-    div.onclick = function() {
-        this.style = 'background-color:dodgerblue;color: white;';
-    }
-    div.tabIndex = "0";
+    let optionDiv = document.createElement("div");
+    optionDiv.className = "option";
+    optionDiv.tabIndex = "0";
     let avatar = document.createElement("img");
     avatar.src = imageSrc;
     avatar.className = "avatar";
@@ -33,9 +31,21 @@ function createOptionDiv(name, imageSrc) {
     let channelName = document.createElement("h5");
     channelName.innerText = name;
     span.appendChild(channelName);
-    div.appendChild(avatar);
-    div.appendChild(span);
-    return div;
+    
+    
+    let infoDiv = document.createElement("div");
+    infoDiv.appendChild(avatar);
+    infoDiv.appendChild(span);
+
+    let button = document.createElement("button");
+    button.className = "blacklistButton";
+    button.innerText = "Add";
+    let buttonDiv = document.createElement("div");
+    buttonDiv.appendChild(button);
+
+    optionDiv.appendChild(infoDiv);
+    optionDiv.appendChild(buttonDiv);
+    return optionDiv;
 }
 
 /**

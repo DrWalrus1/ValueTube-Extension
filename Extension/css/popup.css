@@ -41,10 +41,22 @@ a, a:link, a:visited, a:hover, a:active {
 }
 
 .option {
-    margin-top: -0.5px;
-    display: inline-block;
+    padding-top: 2px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
     cursor: pointer;
     width: 100%;
+}
+
+.blacklistButton {
+    margin-right:5px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    height:25px;
+    font-size: 16px;
 }
 
 .option:focus {
