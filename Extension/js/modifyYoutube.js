@@ -877,20 +877,21 @@ function FilterVideos(videos) {
 	let filterLimit = "";
 	chrome.runtime.sendMessage({greeting : "IsAdvFilters"}, function(response) {
 		if (response.farewell) {
-			chrome.runtime.sendMessage({greeting : "GetAdvFilters"}, function(response) {
-				filterLimit = response.farewell;
-				
+			chrome.runtime.sendMessage({greeting : "GetAdvFilters"}, function(response2) {
+				filterLimit = response2.farewell;
+				UpdateVideoDisplay(filterLimit);
 			});
 		} else {
-			chrome.runtime.sendMessage({greeting : "GetSimpFilters"}, function(response) {
-				filterLimit = response.farewell;
+			chrome.runtime.sendMessage({greeting : "GetSimpFilters"}, function(response2) {
+				filterLimit = response2.farewell;
+				UpdateVideoDisplay(filterLimit);
 			});
 		}
 	});
-	UpdateVideoDisplay(filterLimit);
 }
 
 function UpdateVideoDisplay(filters) {
+	console.log(filters);
 	videosOnPage.forEach(vid => {
 		let hidden = false;
 		for (filter in filters) {
